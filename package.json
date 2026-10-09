@@ -1,0 +1,10 @@
+{
+  "name": "discrete-math-for-backend-engineers-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix site run dev",
+    "build": "npm --prefix site run build",
+    "preview": "npm --prefix site run preview"
+  }
+}

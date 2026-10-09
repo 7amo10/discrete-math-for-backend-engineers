@@ -1,0 +1,144 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Floating3DParticles from './Floating3DParticles.astro';
+import RetroGrid from './RetroGrid.astro';
+import ShimmerButton from './ShimmerButton.astro';
+
+const { data } = Astro.props.entry;
+const { title = data.title, tagline, actions = [] } = data.hero || {};
+const primaryAction = actions.find(a => a.variant === 'primary');
+const secondaryAction = actions.find(a => a.variant !== 'primary');
+---
+
+<div class="custom-hero-container">
+  <!-- Magic UI Retro 3D Grid Perspective Plane -->
+  <RetroGrid opacity={0.22} angle={62} />
+
+  <!-- Magic UI Floating 3D Particles Canvas -->
+  <Floating3DParticles quantity={350} color="#60a5fa" depth={0.65} drift={0.4} size={4.5} opacity={0.5} />
+
+  <div class="custom-hero-content">
+    <div class="hero-badge-pill">
+      <span class="badge-sparkle">✦</span>
+      <span>MIT 6.042J Discrete Mathematics $\longrightarrow$ Production Java</span>
+    </div>
+
+    <h1 class="hero-title" set:html={title} />
+
+    {tagline && <p class="hero-tagline" set:html={tagline} />}
+
+    <div class="hero-actions">
+      {primaryAction && (
+        <ShimmerButton href={primaryAction.link} text={primaryAction.text} />
+      )}
+      {secondaryAction && (
+        <a href={secondaryAction.link} target="_blank" rel="noopener noreferrer" class="hero-btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          {secondaryAction.text}
+        </a>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  .custom-hero-container {
+    position: relative;
+    width: 100%;
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 1rem 4rem;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    margin-bottom: 2.5rem;
+    background: radial-gradient(circle at 50% 30%, rgba(30, 58, 138, 0.25) 0%, rgba(9, 13, 22, 0.8) 80%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  }
+
+  .custom-hero-content {
+    position: relative;
+    z-index: 10;
+    max-width: 52rem;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .hero-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.95rem;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #93c5fd;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .badge-sparkle {
+    color: #f59e0b;
+    font-size: 0.9rem;
+  }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 4.5vw, 3.75rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    margin-bottom: 1.25rem;
+    background: linear-gradient(135deg, #ffffff 40%, #93c5fd 90%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-tagline {
+    font-size: clamp(1.05rem, 1.8vw, 1.25rem);
+    color: #cbd5e1;
+    line-height: 1.6;
+    max-width: 44rem;
+    margin: 0 auto 2.25rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.6rem;
+    border-radius: 9999px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e2e8f0 !important;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    text-decoration: none !important;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+  }
+
+  .hero-btn-secondary:hover {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(148, 163, 184, 0.5);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+  }
+</style>

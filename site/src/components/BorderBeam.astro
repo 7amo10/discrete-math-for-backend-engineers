@@ -1,0 +1,87 @@
+---
+interface Props {
+  duration?: number;
+  borderWidth?: number;
+  colorFrom?: string;
+  colorTo?: string;
+  delay?: number;
+  size?: number; // arc span in degrees (default ~50)
+  class?: string;
+}
+
+const {
+  duration = 7,
+  borderWidth = 1.5,
+  colorFrom = "#3b82f6",
+  colorTo = "#60a5fa",
+  delay = 0,
+  size = 50,
+  class: className = "",
+} = Astro.props;
+---
+
+<div
+  class={`border-beam-container ${className}`}
+  style={`
+    --beam-border-width: ${borderWidth}px;
+    --beam-duration: ${duration}s;
+    --beam-color-from: ${colorFrom};
+    --beam-color-to: ${colorTo};
+    --beam-delay: -${delay}s;
+  `}
+  aria-hidden="true"
+>
+  <div class="border-beam-spinner"></div>
+</div>
+
+<style>
+  .border-beam-container {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: var(--beam-border-width, 1.5px);
+    overflow: hidden;
+    z-index: 1;
+
+    /* Hardware-accelerated border-only mask (1.5px thin rim) */
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+  }
+
+  .border-beam-spinner {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 55deg,
+      var(--beam-color-from, #3b82f6) 75deg,
+      var(--beam-color-to, #60a5fa) 90deg,
+      transparent 105deg,
+      transparent 360deg
+    );
+    animation: border-beam-spin var(--beam-duration, 7s) linear infinite;
+    animation-delay: var(--beam-delay, 0s);
+  }
+
+  @keyframes border-beam-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .border-beam-spinner {
+      animation: none;
+    }
+  }
+</style>

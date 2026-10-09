@@ -1,39 +1,409 @@
-/* Custom math blog styling */
+/* ==========================================================================
+   DISCRETE MATH FOR BACKEND ENGINEERS - THEME & DESIGN SYSTEM
+   Inspired by Bartosz Ciechanowski, 3Blue1Brown, and Excalidraw Hand-Drawn Aesthetics
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fira+Code:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700;800;900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&display=swap');
+
+/* --------------------------------------------------------------------------
+   Root Theme Overrides (Dark & Light)
+   -------------------------------------------------------------------------- */
 :root {
-  --sl-color-accent-low: #0f2942;
-  --sl-color-accent: #2563eb;
+  /* Global Typography */
+  --sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --sl-font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-handdrawn: 'Caveat', cursive, sans-serif;
+  --font-math-serif: 'Newsreader', Georgia, serif;
+
+  /* Accent Colors (Electric Engineering Blue & Amber Gold) */
+  --sl-color-accent-low: #0f1d33;
+  --sl-color-accent: #3b82f6;
   --sl-color-accent-high: #93c5fd;
-  --sl-color-white: #f8fafc;
-  --sl-color-gray-1: #e2e8f0;
+
+  /* Extended Theme Palettes */
+  --math-gold: #f59e0b;
+  --math-gold-bg: rgba(245, 158, 11, 0.08);
+  --math-gold-border: rgba(245, 158, 11, 0.35);
+
+  --sys-teal: #06b6d4;
+  --sys-teal-bg: rgba(6, 182, 212, 0.08);
+  --sys-teal-border: rgba(6, 182, 212, 0.35);
+
+  --proof-green: #10b981;
+  --proof-green-bg: rgba(16, 185, 129, 0.08);
+  --proof-green-border: rgba(16, 185, 129, 0.35);
+
+  --sketch-stroke: #64748b;
+  --sketch-paper-dark: #090e17;
+  --sketch-paper-light: #fbfbf9;
+}
+
+/* --------------------------------------------------------------------------
+   Dark Mode: Deep Blueprint Matrix with Technical Grid
+   -------------------------------------------------------------------------- */
+:root[data-theme='dark'] {
+  --sl-color-bg: #070b14;
+  --sl-color-bg-nav: rgba(10, 15, 29, 0.85);
+  --sl-color-bg-sidebar: #0a0f1d;
+  --sl-color-hairline: rgba(59, 130, 246, 0.15);
+  --sl-color-hairline-light: rgba(148, 163, 184, 0.12);
+  --sl-color-text: #e2e8f0;
+  --sl-color-text-accent: #93c5fd;
+  --sl-color-gray-1: #f8fafc;
   --sl-color-gray-2: #cbd5e1;
   --sl-color-gray-3: #94a3b8;
   --sl-color-gray-4: #64748b;
   --sl-color-gray-5: #334155;
   --sl-color-gray-6: #1e293b;
-  --sl-color-black: #0b0f19;
+
+  /* Blueprint Graph Paper Background with Animated Ambient Glows */
+  background-color: var(--sl-color-bg);
+  background-image: 
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(59, 130, 246, 0.2), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 85% 60%, rgba(6, 182, 212, 0.1), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 15% 80%, rgba(99, 102, 241, 0.1), transparent 60%),
+    radial-gradient(rgba(59, 130, 246, 0.14) 1px, transparent 1px),
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 140px 140px, 140px 140px;
+  background-attachment: fixed;
 }
 
-/* Crisp KaTeX typography */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(circle 800px at 50% 20%, rgba(59, 130, 246, 0.08), transparent 75%);
+  animation: ambient-drift 14s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-drift {
+  0% {
+    opacity: 0.5;
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06) translate(30px, -20px);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.96) translate(-25px, 25px);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Light Mode: Engineering Draft Paper
+   -------------------------------------------------------------------------- */
+:root[data-theme='light'] {
+  --sl-color-bg: #f8fafc;
+  --sl-color-bg-nav: rgba(248, 250, 252, 0.9);
+  --sl-color-bg-sidebar: #f1f5f9;
+  --sl-color-hairline: #e2e8f0;
+  --sl-color-text: #1e293b;
+  --sl-color-text-accent: #2563eb;
+
+  background-color: #fbfbf9;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Frosted Header & Navigation Bar
+   -------------------------------------------------------------------------- */
+header.header {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid var(--sl-color-hairline) !important;
+}
+
+/* --------------------------------------------------------------------------
+   KaTeX Mathematical Equations Styling
+   -------------------------------------------------------------------------- */
 .katex {
-  font-size: 1.08em;
+  font-size: 1.1em;
+  color: var(--sl-color-accent-high);
+}
+
+:root[data-theme='light'] .katex {
+  color: #1d4ed8;
 }
 
 .katex-display {
-  padding: 0.75rem 0;
-  overflow-x: auto;
-  overflow-y: hidden;
+  margin: 1.75rem 0 !important;
+  padding: 1.25rem 1.75rem !important;
+  background: rgba(15, 23, 42, 0.55) !important;
+  border: 1.5px dashed rgba(59, 130, 246, 0.3) !important;
+  border-radius: 0.85rem !important;
+  overflow-x: auto !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
+  position: relative;
 }
 
-/* Callout cards styling */
-.editorial-card {
-  border: 1px solid var(--sl-color-gray-5);
+:root[data-theme='light'] .katex-display {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Mathematical Callouts & Theorem Boxes
+   -------------------------------------------------------------------------- */
+
+/* Formal Theorem Box */
+.math-theorem {
+  position: relative;
+  border: 1.5px solid var(--math-gold-border);
+  border-left: 5px solid var(--math-gold);
   border-radius: 0.75rem;
-  padding: 1.25rem;
-  margin: 1.5rem 0;
-  background-color: rgba(30, 41, 59, 0.4);
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  background: var(--math-gold-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.editorial-card h4 {
-  margin-top: 0;
+.math-theorem .theorem-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--math-gold);
+  margin-bottom: 0.6rem;
+}
+
+/* State Invariant / Guarantee Box */
+.math-invariant {
+  position: relative;
+  border: 1.5px solid var(--proof-green-border);
+  border-left: 5px solid var(--proof-green);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  background: var(--proof-green-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.math-invariant .invariant-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--proof-green);
+  margin-bottom: 0.6rem;
+}
+
+/* Open-Source Systems Spotlight */
+.oss-spotlight {
+  position: relative;
+  border: 1.5px solid var(--sys-teal-border);
+  border-left: 5px solid var(--sys-teal);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  background: var(--sys-teal-bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.oss-spotlight .spotlight-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sys-teal);
+  margin-bottom: 0.6rem;
+}
+
+/* --------------------------------------------------------------------------
+   Excalidraw / Hand-Drawn Sketch Aesthetics
+   -------------------------------------------------------------------------- */
+
+/* Hand-drawn annotation font & badge */
+.hand-drawn {
+  font-family: var(--font-handdrawn);
+  font-size: 1.4rem;
+  color: var(--math-gold);
+  line-height: 1.3;
+  display: inline-block;
+  transform: rotate(-1.5deg);
+}
+
+/* Hand-Drawn Blueprint Card */
+.sketch-card {
+  position: relative;
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  background: rgba(15, 23, 42, 0.4);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.sketch-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.8);
+}
+
+:root[data-theme='light'] .sketch-card {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+/* Sticky Note Style */
+.sticky-note {
+  background: #fef3c7;
+  color: #78350f;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #fde68a;
+  box-shadow: 2px 4px 12px rgba(0, 0, 0, 0.1);
+  transform: rotate(-0.75deg);
+  font-family: var(--font-handdrawn);
+  font-size: 1.3rem;
+  line-height: 1.4;
+  margin: 1.5rem 0;
+}
+
+:root[data-theme='dark'] .sticky-note {
+  background: #292011;
+  color: #fde68a;
+  border-color: #78350f;
+}
+
+/* --------------------------------------------------------------------------
+   Hero Section Enhancements
+   -------------------------------------------------------------------------- */
+.hero {
+  padding-top: 3.5rem !important;
+  padding-bottom: 3.5rem !important;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 250px;
+  background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.18), transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.hero h1 {
+  font-weight: 900 !important;
+  letter-spacing: -0.03em !important;
+  background: linear-gradient(135deg, #f8fafc 30%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme='light'] .hero h1 {
+  background: linear-gradient(135deg, #0f172a 30%, #2563eb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Tagline with hand-drawn marker accent */
+.hero .tagline {
+  font-size: 1.2rem !important;
+  color: var(--sl-color-gray-2) !important;
+  max-width: 48rem;
+  margin: 1.25rem auto !important;
+  line-height: 1.6 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Interactive Table & Code Block Styling
+   -------------------------------------------------------------------------- */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: 1.5px solid rgba(59, 130, 246, 0.25);
+  border-radius: 0.85rem;
+  overflow: hidden;
+  margin: 2rem 0;
+  background: rgba(13, 19, 33, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme='light'] table {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(203, 213, 225, 0.9);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+table th {
+  background: rgba(15, 23, 42, 0.85);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
   color: var(--sl-color-accent-high);
+  border-bottom: 2px solid rgba(59, 130, 246, 0.25);
+  padding: 1rem 1.25rem;
+  text-align: left;
+}
+
+:root[data-theme='light'] table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  transition: background 0.2s ease;
+}
+
+:root[data-theme='light'] table td {
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+:root[data-theme='light'] table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges */
+.lab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }

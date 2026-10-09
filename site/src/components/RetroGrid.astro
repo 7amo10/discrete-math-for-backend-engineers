@@ -1,0 +1,88 @@
+---
+interface Props {
+  angle?: number;
+  cellSize?: number;
+  opacity?: number;
+  lightLineColor?: string;
+  darkLineColor?: string;
+  class?: string;
+}
+
+const {
+  angle = 65,
+  cellSize = 55,
+  opacity = 0.45,
+  lightLineColor = "rgba(59, 130, 246, 0.2)",
+  darkLineColor = "rgba(59, 130, 246, 0.28)",
+  class: className = "",
+} = Astro.props;
+---
+
+<div class={`retro-grid-container ${className}`} style={`--grid-angle: ${angle}deg; --grid-cell-size: ${cellSize}px; --grid-opacity: ${opacity};`}>
+  <div class="retro-grid-plane">
+    <div class="retro-grid-lines"></div>
+  </div>
+  <!-- Top gradient fade to blend seamlessly into content -->
+  <div class="retro-grid-gradient"></div>
+</div>
+
+<style>
+  .retro-grid-container {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    perspective: 200px;
+    z-index: 0;
+  }
+
+  .retro-grid-plane {
+    position: absolute;
+    inset: 0;
+    transform: rotateX(var(--grid-angle));
+    transform-origin: 50% 0%;
+  }
+
+  .retro-grid-lines {
+    animation: retro-grid-scroll 18s linear infinite;
+    background-repeat: repeat;
+    background-size: var(--grid-cell-size) var(--grid-cell-size);
+    height: 300vh;
+    margin-left: -50%;
+    transform-origin: 100% 0 0;
+    width: 200%;
+    opacity: var(--grid-opacity);
+    background-image: 
+      linear-gradient(to right, rgba(59, 130, 246, 0.25) 1px, transparent 0),
+      linear-gradient(to bottom, rgba(59, 130, 246, 0.25) 1px, transparent 0);
+  }
+
+  :root[data-theme='light'] .retro-grid-lines {
+    background-image: 
+      linear-gradient(to right, rgba(37, 99, 235, 0.15) 1px, transparent 0),
+      linear-gradient(to bottom, rgba(37, 99, 235, 0.15) 1px, transparent 0);
+  }
+
+  .retro-grid-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 0%, var(--sl-color-bg, #070b14) 90%);
+  }
+
+  @keyframes retro-grid-scroll {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(var(--grid-cell-size));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .retro-grid-lines {
+      animation: none;
+    }
+  }
+</style>

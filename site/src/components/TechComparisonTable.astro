@@ -1,0 +1,295 @@
+---
+interface ComparisonItem {
+  challenge: string;
+  domain: string;
+  naive: string;
+  naiveProblem: string;
+  mathSolution: string;
+  mathGuarantee: string;
+}
+
+const comparisons: ComparisonItem[] = [
+  {
+    challenge: "Distributed Transfer Failures",
+    domain: "Double-Entry Ledgers & Sagas",
+    naive: "Blind HTTP Retries",
+    naiveProblem: "Network timeouts trigger uncoordinated retries, risking duplicate credits and systemic balance leakage.",
+    mathSolution: "State Machine Invariant Proof",
+    mathGuarantee: "Proves idempotent state transitions (PENDING → COMMITTED ∨ ROLLED_BACK) guaranteeing zero-sum conservation.",
+  },
+  {
+    challenge: "Cluster Scaling & Reshuffling",
+    domain: "Apache Kafka & Cassandra",
+    naive: "Simple Modulo Hashing",
+    naiveProblem: "hash(key) % N causes catastrophic ~100% cache eviction and massive network churn on cluster resize.",
+    mathSolution: "Consistent Hash Ring mod 2³²",
+    mathGuarantee: "Virtual node distribution bounds data movement to exactly K/N keys upon adding or removing nodes.",
+  },
+  {
+    challenge: "Concurrent Row Lock Freezes",
+    domain: "PostgreSQL & InnoDB Deadlocks",
+    naive: "Arbitrary Lock Timeouts",
+    naiveProblem: "Sleeps blindly on locks and kills random worker threads without root-cause diagnosis.",
+    mathSolution: "Wait-For Graph (WFG) Cycle Cut",
+    mathGuarantee: "Detects directed dependency cycles in O(V + E) time via Tarjan's SCC, aborting only the minimum-cost victim.",
+  },
+  {
+    challenge: "Task Dependency Linearization",
+    domain: "Spring IoC & Workflow DAGs",
+    naive: "Recursive Instantiation",
+    naiveProblem: "Deep or cyclic bean graphs trigger runtime StackOverflowError and unhandled thread starvation.",
+    mathSolution: "Poset Linearization & Antichains",
+    mathGuarantee: "Validates strict DAG properties via Topological Sort and schedules maximal independent antichains in parallel.",
+  },
+];
+---
+
+<div class="comparison-container">
+  <div class="comparison-header">
+    <div class="header-badge">
+      <span class="badge-dot"></span>
+      <span>RIGOROUS SYSTEMS ENGINEERING</span>
+    </div>
+    <h3 class="comparison-title">Naive Code vs. Mathematical Invariants</h3>
+    <p class="comparison-subtitle">Why enterprise distributed systems require discrete mathematical proofs rather than optimistic retry loops:</p>
+  </div>
+
+  <div class="comparison-table-wrapper">
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th class="col-challenge">Engineering Challenge</th>
+          <th class="col-naive">Naive Implementation (Fragile)</th>
+          <th class="col-solution">Discrete Math Solution (Guaranteed)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {comparisons.map((item) => (
+          <tr class="comparison-row">
+            <td class="cell-challenge">
+              <div class="challenge-title">{item.challenge}</div>
+              <div class="challenge-domain">{item.domain}</div>
+            </td>
+            <td class="cell-naive">
+              <div class="badge-naive">
+                <span class="icon-cross">✕</span>
+                <strong>{item.naive}</strong>
+              </div>
+              <div class="naive-desc">{item.naiveProblem}</div>
+            </td>
+            <td class="cell-solution">
+              <div class="badge-solution">
+                <span class="icon-check">✓</span>
+                <strong>{item.mathSolution}</strong>
+              </div>
+              <div class="solution-desc">{item.mathGuarantee}</div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .comparison-container {
+    position: relative;
+    margin: 2.5rem 0;
+    border-radius: 1.15rem;
+    background: rgba(13, 19, 33, 0.7);
+    border: 1.5px solid rgba(59, 130, 246, 0.25);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  :root[data-theme='light'] .comparison-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  }
+
+  .comparison-header {
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  :root[data-theme='light'] .comparison-header {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #60a5fa;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 0 8px #3b82f6;
+  }
+
+  .comparison-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin: 0 0 0.4rem 0;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-theme='light'] .comparison-title {
+    color: #0f172a;
+  }
+
+  .comparison-subtitle {
+    font-size: 0.92rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .comparison-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+  }
+
+  .comparison-table th {
+    background: rgba(15, 23, 42, 0.8);
+    padding: 1rem 1.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+    text-align: left;
+  }
+
+  :root[data-theme='light'] .comparison-table th {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .col-challenge {
+    width: 28%;
+    color: #93c5fd;
+  }
+
+  .col-naive {
+    width: 36%;
+    color: #f87171;
+  }
+
+  .col-solution {
+    width: 36%;
+    color: #34d399;
+  }
+
+  .comparison-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.2s ease;
+  }
+
+  :root[data-theme='light'] .comparison-row {
+    border-color: #f1f5f9;
+  }
+
+  .comparison-row:hover {
+    background: rgba(59, 130, 246, 0.06);
+  }
+
+  :root[data-theme='light'] .comparison-row:hover {
+    background: rgba(59, 130, 246, 0.04);
+  }
+
+  .comparison-table td {
+    padding: 1.25rem 1.5rem;
+    vertical-align: top;
+    border: none;
+  }
+
+  .challenge-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+    color: #f1f5f9;
+    margin-bottom: 0.35rem;
+  }
+
+  :root[data-theme='light'] .challenge-title {
+    color: #1e293b;
+  }
+
+  .challenge-domain {
+    font-size: 0.78rem;
+    font-family: var(--sl-font-mono, monospace);
+    color: #60a5fa;
+  }
+
+  .badge-naive {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    font-size: 0.84rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .icon-cross {
+    color: #ef4444;
+    font-weight: 900;
+  }
+
+  .naive-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #94a3b8;
+  }
+
+  .badge-solution {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #6ee7b7;
+    font-size: 0.84rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .icon-check {
+    color: #10b981;
+    font-weight: 900;
+  }
+
+  .solution-desc {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+  }
+
+  :root[data-theme='light'] .solution-desc {
+    color: #334155;
+  }
+</style>

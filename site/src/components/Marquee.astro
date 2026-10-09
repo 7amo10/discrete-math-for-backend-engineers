@@ -1,0 +1,113 @@
+---
+interface Props {
+  items?: string[];
+  speed?: number; // seconds per cycle
+  class?: string;
+}
+
+const {
+  items = [
+    "Apache Kafka",
+    "PostgreSQL InnoDB",
+    "Apache Cassandra",
+    "Spring Framework",
+    "Redis Redlock",
+    "Raft Consensus",
+    "Apache Flink",
+    "Apache Lucene",
+    "Amazon DynamoDB",
+  ],
+  speed = 28,
+  class: className = "",
+} = Astro.props;
+---
+
+<div class={`marquee-wrapper ${className}`}>
+  <div class="marquee-track" style={`--marquee-duration: ${speed}s;`}>
+    <div class="marquee-content">
+      {items.map((item) => (
+        <span class="marquee-pill">
+          <span class="pill-dot"></span>
+          {item}
+        </span>
+      ))}
+    </div>
+    <!-- Duplicate for seamless infinite loop -->
+    <div class="marquee-content" aria-hidden="true">
+      {items.map((item) => (
+        <span class="marquee-pill">
+          <span class="pill-dot"></span>
+          {item}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .marquee-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 1.25rem 0;
+    margin: 2rem 0;
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll var(--marquee-duration) linear infinite;
+  }
+
+  .marquee-track:hover {
+    animation-play-state: paused;
+  }
+
+  .marquee-content {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .marquee-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #e2e8f0;
+    white-space: nowrap;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s ease;
+  }
+
+  .marquee-pill:hover {
+    border-color: rgba(59, 130, 246, 0.6);
+    background: rgba(30, 41, 59, 0.8);
+    transform: translateY(-1px);
+  }
+
+  .pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 0 8px #3b82f6;
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>

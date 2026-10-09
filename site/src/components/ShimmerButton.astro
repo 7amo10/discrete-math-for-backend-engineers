@@ -1,0 +1,89 @@
+---
+interface Props {
+  href: string;
+  text: string;
+  class?: string;
+}
+
+const { href, text, class: className = "" } = Astro.props;
+---
+
+<a href={href} class={`shimmer-button ${className}`}>
+  <span class="shimmer-slide"></span>
+  <span class="shimmer-content">
+    {text}
+    <svg class="shimmer-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14"></path>
+      <path d="m12 5 7 7-7 7"></path>
+    </svg>
+  </span>
+</a>
+
+<style>
+  .shimmer-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0.75rem 1.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #f8fafc !important;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    text-decoration: none !important;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .shimmer-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.45);
+    border-color: rgba(147, 197, 253, 0.4);
+  }
+
+  .shimmer-slide {
+    position: absolute;
+    inset: -200%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 60deg,
+      #3b82f6 120deg,
+      #60a5fa 180deg,
+      transparent 240deg,
+      transparent 360deg
+    );
+    animation: shimmer-spin 4s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .shimmer-content {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.1rem 0;
+  }
+
+  .shimmer-arrow {
+    transition: transform 0.2s ease;
+  }
+
+  .shimmer-button:hover .shimmer-arrow {
+    transform: translateX(4px);
+  }
+
+  @keyframes shimmer-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>

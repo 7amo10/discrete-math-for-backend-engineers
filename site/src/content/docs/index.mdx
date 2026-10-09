@@ -3,9 +3,9 @@ title: Discrete Math for Backend Engineers
 description: Bridging MIT 6.042J discrete mathematics directly to production Java architectures and distributed systems.
 template: splash
 hero:
-  tagline: A practical engineering lab and editorial field guide translating formal discrete proofs into high-performance backend systems.
+  tagline: A hands-on engineering lab and editorial field guide translating formal discrete proofs into high-performance backend systems.
   actions:
-    - text: Start with Week 1
+    - text: Explore Week 1 Invariants
       link: /week-01-invariants/
       icon: right-arrow
       variant: primary
@@ -15,34 +15,133 @@ hero:
       variant: secondary
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import Marquee from '../../components/Marquee.astro';
+import PillarGrid from '../../components/PillarGrid.astro';
+import PillarCard from '../../components/PillarCard.astro';
+import TechComparisonTable from '../../components/TechComparisonTable.astro';
+import RoadmapTable from '../../components/RoadmapTable.astro';
+import Terminal from '../../components/Terminal.astro';
 
-## Why Math for Backend Engineering?
+<div class="hand-drawn" style="text-align: center; margin: 1.5rem auto 1rem; display: block; max-width: 38rem;">
+  "In backend systems, we do not guess correctness — we prove invariants."
+</div>
 
-High-scale backend architectures are not built on ad-hoc intuition; they are built on formal invariants, algebraic structures, and graph theorems:
-
-<CardGrid stagger>
-  <Card title="State Machine Invariants" icon="seti:lock">
-    Proving financial balance conservation ($\sum B_i(t_n) \equiv \sum B_i(t_0)$) across concurrent transfers and partial Saga rollbacks.
-  </Card>
-  <Card title="Modular Arithmetic & Hashing" icon="seti:graphql">
-    Preventing hotspot partitioning via consistent hash rings ($[0, 2^{32}-1]$) and virtual node load balancing in Kafka and Cassandra.
-  </Card>
-  <Card title="Graph Theory & Cycles" icon="seti:project">
-    Eliminating transactional deadlocks in database storage engines via Wait-For Graph (WFG) cycle detection in $O(V + E)$ time.
-  </Card>
-  <Card title="Posets & Topological Sorting" icon="setting">
-    Orchestrating workflow DAG execution engines, identifying concurrent antichains, and resolving Spring Bean circular dependencies.
-  </Card>
-</CardGrid>
+{/* Magic UI Infinite Marquee Ticker */}
+<Marquee />
 
 ---
 
-## The 4-Week Discrete Curriculum
+## The Four Architectural Pillars
 
-| Week | Mathematical Topic | Backend Systems Problem Space | Verification Lab |
-| :---: | :--- | :--- | :--- |
-| **01** | **Propositions & State Invariants** | Double-Entry Ledgers & Saga Rollbacks | `AccountTransferInvariantTest` |
-| **02** | **Number Theory & Modular Hashing** | Consistent Hash Rings & Virtual Node Balancing | `HashRingDistributionTest` |
-| **03** | **Graph Theory & Network Routing** | Wait-For Graph (WFG) Deadlock Resolution | `DeadlockResolverTest` |
-| **04** | **Relations, Posets & Task Scheduling** | Workflow DAG Orchestration & Antichain Concurrency | `DagSchedulerTest` |
+Behind every fault-tolerant distributed system lies a discrete mathematical foundation from **MIT 6.042J**:
+
+<PillarGrid>
+  <PillarCard 
+    number="01" 
+    title="State Machine Invariants" 
+    domain="Double-Entry Ledgers & Sagas"
+    beamColorFrom="#10b981"
+    beamColorTo="#06b6d4"
+    beamDuration={7}
+    icon="🔒"
+  >
+    <div slot="formula">
+      $$\sum_{i=1}^{N} B_i(t_n) \equiv \sum_{i=1}^{N} B_i(t_0)$$
+    </div>
+    Proving that across $n$ concurrent transactions, timeouts, and network rollbacks, the total systemic balance never leaks a single cent.
+  </PillarCard>
+
+  <PillarCard 
+    number="02" 
+    title="Modular Arithmetic & Hash Rings" 
+    domain="Apache Kafka & Cassandra"
+    beamColorFrom="#3b82f6"
+    beamColorTo="#6366f1"
+    beamDuration={8}
+    icon="⚡"
+  >
+    <div slot="formula">
+      $$h(k) \pmod{2^{32}-1} \implies \frac{K}{N} \text{ migration}$$
+    </div>
+    Using the Pigeonhole Principle and virtual nodes on a modulo $2^{32}$ ring to eliminate partition hotspots and limit data movement upon cluster resize.
+  </PillarCard>
+
+  <PillarCard 
+    number="03" 
+    title="Graph Topologies & Cycles" 
+    domain="PostgreSQL & InnoDB Deadlocks"
+    beamColorFrom="#f59e0b"
+    beamColorTo="#ef4444"
+    beamDuration={9}
+    icon="🕸️"
+  >
+    <div slot="formula">
+      $$G = (V, E) \quad \text{where } \exists \text{ cycle } C \implies \text{Deadlock}$$
+    </div>
+    Resolving transactional deadlocks in $O(V + E)$ time using Tarjan's Strongly Connected Components and selecting minimal-rollback victim transactions.
+  </PillarCard>
+
+  <PillarCard 
+    number="04" 
+    title="Posets & Task Scheduling" 
+    domain="Spring IoC & Workflow DAGs"
+    beamColorFrom="#8b5cf6"
+    beamColorTo="#ec4899"
+    beamDuration={7.5}
+    icon="⏱️"
+  >
+    <div slot="formula">
+      $$a \prec b \implies \text{exec}(a) < \text{exec}(b), \quad \text{Antichains} \parallel$$
+    </div>
+    Linearizing dependency graphs via topological sort while concurrently executing maximal independent antichains across worker threads.
+  </PillarCard>
+</PillarGrid>
+
+---
+
+## Architectural Comparison: Naive Code vs. Mathematical Rigor
+
+{/* Interactive Naive vs Discrete Math Table */}
+<TechComparisonTable />
+
+---
+
+## 4-Week Discrete Roadmap & Verification Lab
+
+{/* Interactive 4-Week Curriculum & Status Table */}
+<RoadmapTable />
+
+---
+
+## The Engineering Workflow
+
+<div class="math-theorem">
+  <div class="theorem-header">⚡ The 3-Step Micro-Session Cadence (45-60 min/day)</div>
+  <p>To preserve mental energy for your primary Spring studies, math is approached as a high-ROI secondary habit:</p>
+  <ol>
+    <li><strong>20 Mins (Visual Intuition):</strong> Watch the assigned MIT 6.042J lecture at 1.25$\times$ speed or review the editorial blueprint diagram.</li>
+    <li><strong>20 Mins (Code Verification):</strong> Open <code>backend-lab</code> in your IDE and implement the domain invariant to turn the JUnit tests green.</li>
+    <li><strong>10 Mins (Systems Reflection):</strong> Connect the mathematical proof to real-world infrastructure (Kafka, Cassandra, Spring, PostgreSQL).</li>
+  </ol>
+</div>
+
+{/* Magic UI Styled Terminal with Live Test Execution Output */}
+<div class="oss-spotlight">
+  <div class="spotlight-header">🚀 Open Source Test Lab</div>
+  <p>All verification suites run locally via modern Maven and automatically in GitHub Actions on every commit:</p>
+  
+  <Terminal 
+    command="mvn test"
+    title="backend-lab ~ zsh (Java 21)"
+    output={[
+      "[INFO] -------------------------------------------------------",
+      "[INFO]  T E S T S  -  M I T   6 . 0 4 2 J   L A B",
+      "[INFO] -------------------------------------------------------",
+      "[INFO] Running com.backend.discrete.week01_invariants.AccountTransferInvariantTest",
+      "[INFO] Invariant Verified: Balance sum is preserved across 10,000 concurrent transfers.",
+      "[INFO] Saga Compensation: Rollback preserved zero-sum ledger equilibrium.",
+      "[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.165 s",
+      "[INFO] BUILD SUCCESS",
+    ]}
+  />
+</div>

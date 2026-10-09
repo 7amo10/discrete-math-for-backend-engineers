@@ -1,0 +1,148 @@
+---
+interface Props {
+  command?: string;
+  output?: string[];
+  title?: string;
+  class?: string;
+}
+
+const {
+  command = "mvn test -Dtest=AccountTransferInvariantTest",
+  output = [
+    "[INFO] -------------------------------------------------------",
+    "[INFO]  T E S T S",
+    "[INFO] -------------------------------------------------------",
+    "[INFO] Running com.backend.discrete.week01_invariants.AccountTransferInvariantTest",
+    "[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.142 s",
+    "[INFO] Invariant Verified: Balance sum is preserved across 10,000 transfers.",
+    "[INFO] BUILD SUCCESS",
+  ],
+  title = "backend-lab ~ zsh",
+  class: className = "",
+} = Astro.props;
+---
+
+<div class={`terminal-window ${className}`}>
+  <div class="terminal-header">
+    <div class="terminal-dots">
+      <span class="dot dot-red"></span>
+      <span class="dot dot-yellow"></span>
+      <span class="dot dot-green"></span>
+    </div>
+    <span class="terminal-title">{title}</span>
+    <div class="terminal-actions">
+      <span class="terminal-badge">Java 21</span>
+    </div>
+  </div>
+
+  <div class="terminal-body">
+    <div class="terminal-prompt-line">
+      <span class="prompt-symbol">$</span>
+      <span class="prompt-command">{command}</span>
+    </div>
+
+    <div class="terminal-output">
+      {output.map((line) => (
+        <div class={`output-line ${line.includes("BUILD SUCCESS") ? "success" : ""} ${line.includes("Running") ? "highlight" : ""}`}>
+          {line}
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<style>
+  .terminal-window {
+    background: #090d16;
+    border: 1.5px solid rgba(59, 130, 246, 0.25);
+    border-radius: 0.85rem;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    font-family: var(--sl-font-mono, monospace);
+    margin: 2rem 0;
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    background: rgba(15, 23, 42, 0.85);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  .terminal-dots {
+    display: flex;
+    gap: 0.45rem;
+  }
+
+  .dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .dot-red { background: #ef4444; }
+  .dot-yellow { background: #f59e0b; }
+  .dot-green { background: #10b981; }
+
+  .terminal-title {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+  }
+
+  .terminal-badge {
+    font-size: 0.72rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .terminal-body {
+    padding: 1.25rem 1.5rem;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  .terminal-prompt-line {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .prompt-symbol {
+    color: #10b981;
+    font-weight: 700;
+  }
+
+  .prompt-command {
+    color: #f8fafc;
+    font-weight: 600;
+  }
+
+  .terminal-output {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .output-line {
+    color: #94a3b8;
+  }
+
+  .output-line.highlight {
+    color: #93c5fd;
+  }
+
+  .output-line.success {
+    color: #34d399;
+    font-weight: 700;
+    margin-top: 0.35rem;
+  }
+</style>

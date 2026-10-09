@@ -1,0 +1,368 @@
+---
+interface RoadmapItem {
+  week: string;
+  topic: string;
+  mitChapter: string;
+  system: string;
+  systemPill: string;
+  javaModule: string;
+  status: "active" | "upcoming";
+  link?: string;
+}
+
+const roadmap: RoadmapItem[] = [
+  {
+    week: "01",
+    topic: "Propositions & State Invariants",
+    mitChapter: "MIT 6.042J Chapter 1 & 5",
+    system: "Double-Entry Ledgers & Saga Rollbacks",
+    systemPill: "Distributed Sagas",
+    javaModule: "week01_invariants",
+    status: "active",
+    link: "/week-01-invariants/",
+  },
+  {
+    week: "02",
+    topic: "Number Theory & Modular Hashing",
+    mitChapter: "MIT 6.042J Chapter 4",
+    system: "Consistent Hash Rings & Virtual Nodes",
+    systemPill: "Kafka & Cassandra",
+    javaModule: "week02_hashing",
+    status: "upcoming",
+    link: "/week-02-modular-hashing/",
+  },
+  {
+    week: "03",
+    topic: "Graph Theory & Network Routing",
+    mitChapter: "MIT 6.042J Chapter 6 & 11",
+    system: "Wait-For Graph (WFG) Deadlock Resolution",
+    systemPill: "PostgreSQL InnoDB",
+    javaModule: "week03_graphs",
+    status: "upcoming",
+    link: "/week-03-graph-topologies/",
+  },
+  {
+    week: "04",
+    topic: "Relations, Posets & Task Scheduling",
+    mitChapter: "MIT 6.042J Chapter 7 & 10",
+    system: "Workflow DAG Engine & Antichain Concurrency",
+    systemPill: "Spring IoC & Airflow",
+    javaModule: "week04_posets",
+    status: "upcoming",
+    link: "/week-04-posets-scheduling/",
+  },
+];
+---
+
+<div class="roadmap-card">
+  <div class="roadmap-header">
+    <div class="roadmap-badge">
+      <span class="pulse-indicator"></span>
+      <span>4-WEEK VERIFICATION CURRICULUM</span>
+    </div>
+    <h3 class="roadmap-title">MIT 6.042J Theory $\longrightarrow$ Java 21 Production Lab</h3>
+    <p class="roadmap-subtitle">Every topic maps formal discrete proofs to runnable, passing JUnit test suites in <code>backend-lab</code>:</p>
+  </div>
+
+  <div class="roadmap-table-container">
+    <table class="roadmap-table">
+      <thead>
+        <tr>
+          <th class="col-wk">Week</th>
+          <th class="col-math">Mathematical Topic</th>
+          <th class="col-sys">Production Systems Focus</th>
+          <th class="col-lab">Java Lab Module</th>
+          <th class="col-status">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {roadmap.map((item) => (
+          <tr class={`roadmap-row ${item.status}`}>
+            <td class="cell-wk">
+              <span class="wk-badge">{item.week}</span>
+            </td>
+            <td class="cell-math">
+              <div class="math-topic">
+                {item.link ? (
+                  <a href={item.link} class="topic-link">{item.topic}</a>
+                ) : (
+                  item.topic
+                )}
+              </div>
+              <div class="mit-chapter">{item.mitChapter}</div>
+            </td>
+            <td class="cell-sys">
+              <div class="sys-name">{item.system}</div>
+              <span class="sys-pill">{item.systemPill}</span>
+            </td>
+            <td class="cell-lab">
+              <code class="lab-code">backend-lab/{item.javaModule}</code>
+            </td>
+            <td class="cell-status">
+              {item.status === 'active' ? (
+                <span class="status-pill status-active">
+                  <span class="status-dot-pulse"></span>
+                  ACTIVE
+                </span>
+              ) : (
+                <span class="status-pill status-upcoming">
+                  UPCOMING
+                </span>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<style>
+  .roadmap-card {
+    position: relative;
+    margin: 2.5rem 0;
+    border-radius: 1.15rem;
+    background: rgba(13, 19, 33, 0.7);
+    border: 1.5px solid rgba(59, 130, 246, 0.25);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  :root[data-theme='light'] .roadmap-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  }
+
+  .roadmap-header {
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  :root[data-theme='light'] .roadmap-header {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .roadmap-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #10b981;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .pulse-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: status-pulse-anim 2s infinite ease-in-out;
+  }
+
+  .roadmap-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    margin: 0 0 0.4rem 0;
+    color: #f8fafc;
+    letter-spacing: -0.02em;
+  }
+
+  :root[data-theme='light'] .roadmap-title {
+    color: #0f172a;
+  }
+
+  .roadmap-subtitle {
+    font-size: 0.92rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  .roadmap-table-container {
+    overflow-x: auto;
+  }
+
+  .roadmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    border: none;
+  }
+
+  .roadmap-table th {
+    background: rgba(15, 23, 42, 0.8);
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+    text-align: left;
+    color: #93c5fd;
+  }
+
+  :root[data-theme='light'] .roadmap-table th {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #1e293b;
+  }
+
+  .col-wk { width: 8%; text-align: center; }
+  .col-math { width: 30%; }
+  .col-sys { width: 30%; }
+  .col-lab { width: 20%; }
+  .col-status { width: 12%; text-align: center; }
+
+  .roadmap-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.2s ease;
+  }
+
+  :root[data-theme='light'] .roadmap-row {
+    border-color: #f1f5f9;
+  }
+
+  .roadmap-row:hover {
+    background: rgba(59, 130, 246, 0.08);
+  }
+
+  .roadmap-table td {
+    padding: 1.15rem 1.25rem;
+    vertical-align: middle;
+    border: none;
+  }
+
+  .cell-wk {
+    text-align: center;
+  }
+
+  .wk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    font-family: var(--sl-font-mono, monospace);
+    font-weight: 800;
+    font-size: 0.95rem;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #60a5fa;
+  }
+
+  .topic-link {
+    color: #f8fafc !important;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: color 0.2s ease;
+  }
+
+  .topic-link:hover {
+    color: #60a5fa !important;
+    text-decoration: underline !important;
+  }
+
+  :root[data-theme='light'] .topic-link {
+    color: #0f172a !important;
+  }
+
+  :root[data-theme='light'] .topic-link:hover {
+    color: #2563eb !important;
+  }
+
+  .mit-chapter {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin-top: 0.25rem;
+  }
+
+  .sys-name {
+    font-size: 0.92rem;
+    color: #cbd5e1;
+    margin-bottom: 0.3rem;
+  }
+
+  :root[data-theme='light'] .sys-name {
+    color: #334155;
+  }
+
+  .sys-pill {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(6, 182, 212, 0.12);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    color: #67e8f9;
+  }
+
+  .lab-code {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-family: var(--sl-font-mono, monospace);
+    font-size: 0.82rem;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+  }
+
+  :root[data-theme='light'] .lab-code {
+    background: #f1f5f9;
+    color: #1d4ed8;
+    border-color: #cbd5e1;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .status-active {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+  }
+
+  .status-dot-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: status-pulse-anim 1.5s infinite ease-in-out;
+  }
+
+  .status-upcoming {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #94a3b8;
+  }
+
+  @keyframes status-pulse-anim {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(1.3);
+    }
+  }
+</style>
