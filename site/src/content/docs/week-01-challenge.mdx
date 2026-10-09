@@ -1,0 +1,250 @@
+---
+title: "Week 1 Lab: Double-Entry Ledger & Saga State Machine Invariant"
+description: "Mathematical induction proof and runnable Java 21 verification suite for double-entry bookkeeping ledgers and distributed Sagas."
+sidebar:
+  order: 2
+---
+
+import Terminal from '../../components/Terminal.astro';
+import SagaMentalModelDiagram from '../../components/SagaMentalModelDiagram.astro';
+import { Card, CardGrid, Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+<div class="hand-drawn" style="text-align: center; margin: 1rem auto 2rem; display: block;">
+  "A distributed system is only as reliable as its invariant under partial failure."
+</div>
+
+---
+
+## 1. The Practical Challenge
+
+This challenge is ispired from the curriculum specification in the MIT course:
+
+<div class="sketch-card">
+  <h3>Practical Exercise: Formalizing a Financial Invariant</h3>
+  <p><strong>Problem Statement:</strong> Consider an account-transfer service in Spring. Let $A$ and $B$ denote account balances, and $T$ a transfer amount. Prove by mathematical induction that if the pre-condition $A + B = S$ holds, any sequence of $n$ transfers between $A$ and $B$ preserves $A + B = S$, even if individual transfers fail and trigger compensating rollback steps.</p>
+</div>
+
+---
+
+## 2. Formal Mathematical Induction Proof
+
+{/* High-Accuracy Excalidraw Blueprint: Visual Mental Model */}
+<SagaMentalModelDiagram />
+
+### 2.1 Formulation of the Predicate $P(n)$
+
+Let a system state after step $n$ be represented as:
+
+$$q_n = (\mathbf{A}_n, \mathbf{T}_n)$$
+
+Where $\mathbf{A}_n = \{B_A(n), B_B(n)\}$ denotes account balances, and $\mathbf{T}_n$ represents in-flight transactions holding funds in escrow:
+
+$$\text{Escrow}(n) = \sum_{tx \in \mathbf{T}_n} tx.amount \quad \text{for } tx.status \in \{\text{DEBITED}, \text{COMPENSATING}\}$$
+
+We define the inductive predicate $P(n)$ for $n \ge 0$:
+
+$$P(n) \iff B_A(n) + B_B(n) + \text{Escrow}(n) \equiv S$$
+
+---
+
+### 2.2 Base Case ($n = 0$)
+
+At time $t_0$, zero transfers have been executed. By the problem definition:
+- $B_A(0) + B_B(0) = S$
+- No transactions are in flight: $\text{Escrow}(0) = 0$
+
+Therefore:
+
+$$B_A(0) + B_B(0) + \text{Escrow}(0) = S + 0 = S$$
+
+The base case $P(0)$ holds **true**.
+
+---
+
+### 2.3 Inductive Hypothesis
+
+Assume $P(k)$ is true for some arbitrary integer $k \ge 0$:
+
+$$B_A(k) + B_B(k) + \text{Escrow}(k) = S$$
+
+---
+
+### 2.4 Inductive Step ($k \implies k + 1$)
+
+We must show that for any valid state transition occurring at step $k+1$, $P(k+1)$ holds. Any transfer of amount $T$ from $A$ to $B$ falls into one of four mutually exclusive, exhaustive cases:
+
+#### Case 1: Successful Transfer (Happy Path)
+1. **Debit Phase:** $A$ is debited by $T$, escrow increases by $T$:
+   $$B_A(k+1) = B_A(k) - T, \quad \text{Escrow}(k+1) = \text{Escrow}(k) + T$$
+   $$\Delta_1 = (-T) + (+T) = 0$$
+2. **Credit Phase:** $B$ is credited by $T$, escrow decreases by $T$:
+   $$B_B(k+1) = B_B(k) + T, \quad \text{Escrow}(k+1) = \text{Escrow}(k) - T$$
+   $$\Delta_2 = (+T) + (-T) = 0$$
+
+Net balance change: $\Delta = \Delta_1 + \Delta_2 = 0$. Therefore, $P(k+1)$ holds.
+
+#### Case 2: Insufficient Funds (Precondition Rejection)
+If $B_A(k) < T$, the state machine rejects the transfer before any debit occurs.
+$$B_A(k+1) = B_A(k), \quad B_B(k+1) = B_B(k), \quad \text{Escrow}(k+1) = \text{Escrow}(k)$$
+Net change $\Delta = 0$. Therefore, $P(k+1)$ holds.
+
+#### Case 3: Downstream Network Failure & Compensating Rollback
+1. **Debit Phase:** Account $A$ is debited by $T$, escrow increases by $T$:
+   $$\Delta_1 = (-T) + (+T) = 0$$
+2. **Downstream Failure:** The RPC call to credit Account $B$ fails (e.g. 504 Gateway Timeout or node crash).
+3. **Compensating Action:** The Saga Coordinator issues a compensating credit of $+T$ back to source Account $A$, and releases escrow:
+   $$B_A(k+1) = B_A(k) - T + T = B_A(k), \quad \text{Escrow}(k+1) = \text{Escrow}(k) + T - T = \text{Escrow}(k)$$
+   $$\Delta_2 = (+T) + (-T) = 0$$
+
+Net balance change: $\Delta = 0$. The refund guarantees zero monetary leakage. Therefore, $P(k+1)$ holds.
+
+#### Case 4: Concurrent Overlapping Transfers
+In a multi-threaded system with atomic operations or optimistic locking, transactions serialize via linearizable commit points. By linearity of addition, the sum of independent deltas is:
+$$\sum_{i=1}^m \Delta_i = \sum_{i=1}^m 0 = 0$$
+
+---
+
+### 2.5 Conclusion
+
+Since the base case $P(0)$ is true, and for all $k \ge 0$, $P(k) \implies P(k+1)$, by the **Principle of Mathematical Induction (MIT 6.042J Theorem 3.2.1)**:
+
+$$\forall n \in \mathbb{N}, \quad P(n) \text{ is TRUE. } \quad \blacksquare$$
+
+---
+
+## 3. Java 21 Code Lab Architecture
+
+The theoretical state machine is implemented in `backend-lab/src/main/java/com/backend/discrete/week01_invariants/`:
+
+<CardGrid>
+  <Card title="Account.java" icon="seti:lock">
+    Represents an entity with fixed-point cent precision (<code>long</code>) and an <code>AtomicLong</code> version counter for concurrency control.
+  </Card>
+
+  <Card title="LedgerEntry.java" icon="seti:notebook">
+    Immutable record modeling the append-only journal. Verifies Luca Pacioli's rule: $\sum \text{Debits} \equiv \sum \text{Credits}$.
+  </Card>
+
+  <Card title="LedgerStateMachine.java" icon="setting">
+    Encapsulates discrete states $Q$, transitions $\delta$, and computes the systemic total across account balances and in-flight escrows.
+  </Card>
+
+  <Card title="SagaCoordinator.java" icon="seti:graphql">
+    Simulates real-world distributed chaos, injecting random network timeouts and triggering automatic compensating rollbacks.
+  </Card>
+</CardGrid>
+
+---
+
+## 4. Test Suite Walkthrough & Verification
+
+All test scenarios are implemented in `AccountTransferInvariantTest.java`:
+
+<Tabs>
+  <TabItem label="1. Base Case & Sequential">
+```java
+@Test
+void testBaseCaseAndSequentialTransfers() {
+    Account a = new Account("ACC-A", 100_000); // $1,000.00
+    Account b = new Account("ACC-B", 50_000);  // $500.00
+    long initialTotal = 150_000;
+
+    LedgerStateMachine stateMachine = new LedgerStateMachine(List.of(a, b));
+    SagaCoordinator coordinator = new SagaCoordinator(stateMachine);
+
+    // Verify Base Case P(0)
+    stateMachine.assertSystemicInvariant();
+
+    // Execute transfers and assert invariant after each step
+    coordinator.executeTransfer("TX-1", "ACC-A", "ACC-B", 20_000);
+    stateMachine.assertSystemicInvariant();
+    assertThat(stateMachine.calculateSystemicTotal()).isEqualTo(initialTotal);
+}
+```
+  </TabItem>
+
+  <TabItem label="2. Chaos & Compensating Rollback">
+```java
+@Test
+void testSimulatedNetworkFailureAndCompensatingRollback() {
+    Account a = new Account("ACC-A", 100_000);
+    Account b = new Account("ACC-B", 50_000);
+
+    LedgerStateMachine stateMachine = new LedgerStateMachine(List.of(a, b));
+    SagaCoordinator coordinator = new SagaCoordinator(stateMachine);
+
+    // Inject 100% downstream network timeout
+    coordinator.setSimulatedFailureRate(1.0);
+
+    TransferTransaction tx = coordinator.executeTransfer("TX-FAIL", "ACC-A", "ACC-B", 30_000);
+
+    // Transaction rolled back and source refunded
+    assertThat(tx.getStatus()).isEqualTo(TransferStatus.ROLLED_BACK);
+    assertThat(a.getBalanceInCents()).isEqualTo(100_000);
+    stateMachine.assertSystemicInvariant();
+}
+```
+  </TabItem>
+
+  <TabItem label="3. Virtual Threads Concurrency">
+```java
+@Test
+void testHighConcurrencyChaosTransfersWithVirtualThreads() throws InterruptedException {
+    int numAccounts = 10;
+    long expectedTotal = numAccounts * 100_000; // $10,000.00
+
+    // Java 21 Virtual Threads running 5,000 concurrent transfers with 30% dropouts
+    try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        for (int i = 0; i < 5_000; i++) {
+            executor.submit(() -> coordinator.executeTransfer(...));
+        }
+    }
+
+    // Mathematical Proof holds under extreme concurrency
+    stateMachine.assertSystemicInvariant();
+    assertThat(stateMachine.calculateSystemicTotal()).isEqualTo(expectedTotal);
+}
+```
+  </TabItem>
+</Tabs>
+
+---
+
+## 5. Running the Lab Suite via Maven
+
+Execute the verification tests from your terminal:
+
+```bash
+cd backend-lab
+mvn test -Dtest=AccountTransferInvariantTest
+```
+
+### Live Test Execution Output
+
+<Terminal 
+  command="mvn test -Dtest=AccountTransferInvariantTest"
+  title="backend-lab ~ zsh (Java 21)"
+  output={[
+    "[INFO] -------------------------------------------------------",
+    "[INFO]  T E S T S  -  W E E K   1   I N V A R I A N T S",
+    "[INFO] -------------------------------------------------------",
+    "[INFO] Running com.backend.discrete.week01_invariants.AccountTransferInvariantTest",
+    "[INFO] Chaos Test Results: Committed=3481, RolledBack=1519, FailedInitial=0",
+    "[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.635 s",
+    "[INFO] Invariant Verified: Balance sum is preserved across 5,000 concurrent transfers.",
+    "[INFO] Double-Entry Ledger: Sum(Debits) == Sum(Credits) across all settled entries.",
+    "[INFO] BUILD SUCCESS",
+  ]}
+/>
+
+---
+
+
+
+<div class="sketch-card" style="text-align: center;">
+  <h3>Theory Editorial Reference</h3>
+  <p>Review the MIT 6.042J lecture notes and discrete propositions in the editorial guide:</p>
+  <a href="/week-01-invariants/" class="topic-link" style="font-size: 1.15rem; font-weight: 700;">
+    ← Back to Week 1 Editorial: Propositions, Proof Patterns & State Invariants
+  </a>
+</div>

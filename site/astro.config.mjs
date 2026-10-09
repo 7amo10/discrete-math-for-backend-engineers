@@ -22,6 +22,7 @@ export default defineConfig({
       },
       components: {
         Hero: './src/components/CustomHero.astro',
+        PageFrame: './src/components/CustomPageFrame.astro',
       },
       customCss: [
         'katex/dist/katex.min.css',
@@ -35,12 +36,18 @@ export default defineConfig({
           ],
         },
         {
-          label: '4-Week Discrete Curriculum',
+          label: 'Week 1: Propositions & Invariants',
           items: [
-            { label: 'Week 1: State Invariants & Sagas', slug: 'week-01-invariants' },
-            { label: 'Week 2: Modular Arithmetic & Hashing', slug: 'week-02-modular-hashing' },
+            { label: 'Editorial: MIT 6.042J & Sagas', slug: 'week-01-invariants' },
+            { label: 'Lab: Financial State Machine Challenge', slug: 'week-01-challenge' },
+          ],
+        },
+        {
+          label: 'Upcoming Discrete Modules',
+          items: [
+            { label: 'Week 2: Relations & Task Scheduling', slug: 'week-02-posets-scheduling' },
             { label: 'Week 3: Graph Theory & Routing', slug: 'week-03-graph-topologies' },
-            { label: 'Week 4: Relations & Task Scheduling', slug: 'week-04-posets-scheduling' },
+            { label: 'Week 4: Number Theory & Hashing', slug: 'week-04-modular-hashing' },
           ],
         },
       ],
