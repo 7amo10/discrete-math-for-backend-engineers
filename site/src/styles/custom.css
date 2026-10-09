@@ -55,45 +55,20 @@
   --sl-color-gray-4: #64748b;
   --sl-color-gray-5: #334155;
   --sl-color-gray-6: #1e293b;
+}
 
-  /* Blueprint Graph Paper Background with Animated Ambient Glows */
+html {
   background-color: var(--sl-color-bg);
-  background-image: 
-    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(59, 130, 246, 0.2), transparent 70%),
-    radial-gradient(ellipse 60% 40% at 85% 60%, rgba(6, 182, 212, 0.1), transparent 60%),
-    radial-gradient(ellipse 60% 40% at 15% 80%, rgba(99, 102, 241, 0.1), transparent 60%),
-    radial-gradient(rgba(59, 130, 246, 0.14) 1px, transparent 1px),
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 140px 140px, 140px 140px;
-  background-attachment: fixed;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: -1;
-  background: radial-gradient(circle 800px at 50% 20%, rgba(59, 130, 246, 0.08), transparent 75%);
-  animation: ambient-drift 14s ease-in-out infinite alternate;
-}
-
-@keyframes ambient-drift {
-  0% {
-    opacity: 0.5;
-    transform: scale(1) translate(0, 0);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.06) translate(30px, -20px);
-  }
-  100% {
-    opacity: 0.6;
-    transform: scale(0.96) translate(-25px, 25px);
-  }
+/* Ensure all page containers are completely transparent so Magic UI RetroGrid is fully visible */
+body,
+.page,
+.main-frame,
+.main-pane,
+.content-panel {
+  background-color: transparent !important;
+  background-image: none !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -407,3 +382,154 @@ table tr:last-child td {
   color: #34d399;
   border: 1px solid rgba(16, 185, 129, 0.35);
 }
+
+/* ==========================================================================
+   Expandable / Collapsible Sidebar & Wide Content Mode (Magic UI Behavior)
+   Strictly scoped to documentation pages that possess a sidebar
+   ========================================================================== */
+
+/* Layout Transition Dynamics (Only on pages with sidebar) */
+[data-has-sidebar] .sidebar-pane {
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.28s ease,
+              visibility 0.38s !important;
+  will-change: transform, opacity;
+}
+
+[data-has-sidebar] .main-frame {
+  transition: padding-inline-start 0.38s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: padding-inline-start;
+}
+
+[data-has-sidebar] .content-panel {
+  transition: max-width 0.38s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[data-has-sidebar] .main-pane {
+  transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Collapsed Sidebar: Expands Content to Full Canvas (Zen Mode) - Strictly for pages with sidebar */
+@media (min-width: 50rem) {
+  html[data-has-sidebar][data-sidebar-collapsed="true"] {
+    --sl-content-inline-start: 0rem !important;
+    --sl-content-width: 86rem !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"] .sidebar-pane {
+    transform: translateX(-102%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"] .main-frame {
+    padding-inline-start: 0rem !important;
+  }
+
+  /* Widen Content Canvas while preserving centered layout */
+  html[data-has-sidebar][data-sidebar-collapsed="true"] .content-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: auto !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"] .sl-container {
+    max-width: 86rem !important;
+    margin-inline: auto !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"] .main-pane {
+    max-width: 100% !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"][data-has-toc] .main-pane {
+    width: calc(100% - var(--sl-sidebar-width)) !important;
+  }
+
+  html[data-has-sidebar][data-sidebar-collapsed="true"]:not([data-has-toc]) .main-pane {
+    width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   Splash / Landing Page Centering & Canvas Balance (Index Page)
+   Strictly guarantees perfect horizontal centering on all viewports
+   ========================================================================== */
+html:not([data-has-sidebar]),
+html[data-has-hero] {
+  --sl-content-inline-start: 0rem !important;
+  --sl-content-width: 74rem !important;
+}
+
+html:not([data-has-sidebar]) .main-frame,
+html[data-has-hero] .main-frame {
+  padding-inline-start: 0rem !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+html:not([data-has-sidebar]) .main-pane,
+html[data-has-hero] .main-pane {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+html:not([data-has-sidebar]) main,
+html[data-has-hero] main {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+html:not([data-has-sidebar]) .content-panel,
+html[data-has-hero] .content-panel {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-left: clamp(1rem, 4vw, 2.5rem) !important;
+  padding-right: clamp(1rem, 4vw, 2.5rem) !important;
+  margin-inline: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+html:not([data-has-sidebar]) .sl-container,
+html[data-has-hero] .sl-container {
+  width: 100% !important;
+  max-width: 74rem !important;
+  margin-inline: auto !important;
+}
+
+/* Landing Page Section Headers & Symmetrical Balance */
+html:not([data-has-sidebar]) .sl-markdown-content > h2,
+html[data-has-hero] .sl-markdown-content > h2 {
+  text-align: center;
+  margin-top: 3.5rem;
+  margin-bottom: 0.75rem;
+}
+
+html:not([data-has-sidebar]) .sl-markdown-content > h2 + p,
+html[data-has-hero] .sl-markdown-content > h2 + p {
+  text-align: center;
+  max-width: 46rem;
+  margin-inline: auto;
+  color: var(--sl-color-gray-2);
+}
+
+html:not([data-has-sidebar]) hr,
+html[data-has-hero] hr {
+  margin: 3.5rem auto;
+  border-color: rgba(59, 130, 246, 0.18);
+  width: 80%;
+  max-width: 50rem;
+}
+

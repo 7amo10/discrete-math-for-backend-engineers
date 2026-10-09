@@ -11,30 +11,35 @@ interface Props {
 const {
   angle = 65,
   cellSize = 55,
-  opacity = 0.45,
-  lightLineColor = "rgba(59, 130, 246, 0.2)",
-  darkLineColor = "rgba(59, 130, 246, 0.28)",
+  opacity = 0.65,
+  lightLineColor = "rgba(59, 130, 246, 0.25)",
+  darkLineColor = "rgba(59, 130, 246, 0.35)",
   class: className = "",
 } = Astro.props;
 ---
 
-<div class={`retro-grid-container ${className}`} style={`--grid-angle: ${angle}deg; --grid-cell-size: ${cellSize}px; --grid-opacity: ${opacity};`}>
+<!-- Magic UI Full-Screen Animated Retro Grid -->
+<div 
+  class={`retro-grid-container ${className}`} 
+  style={`--grid-angle: ${angle}deg; --grid-cell-size: ${cellSize}px; --grid-opacity: ${opacity};`}
+  aria-hidden="true"
+>
   <div class="retro-grid-plane">
     <div class="retro-grid-lines"></div>
   </div>
-  <!-- Top gradient fade to blend seamlessly into content -->
-  <div class="retro-grid-gradient"></div>
+  <!-- Soft vignette aura to blend with dark mode -->
+  <div class="retro-grid-vignette"></div>
 </div>
 
 <style>
   .retro-grid-container {
     pointer-events: none;
-    position: absolute;
+    position: fixed;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
-    perspective: 200px;
+    perspective: 260px;
     z-index: 0;
   }
 
@@ -42,33 +47,38 @@ const {
     position: absolute;
     inset: 0;
     transform: rotateX(var(--grid-angle));
-    transform-origin: 50% 0%;
+    transform-origin: 50% 10%;
   }
 
   .retro-grid-lines {
-    animation: retro-grid-scroll 18s linear infinite;
+    animation: retro-grid-scroll 14s linear infinite;
     background-repeat: repeat;
     background-size: var(--grid-cell-size) var(--grid-cell-size);
-    height: 300vh;
+    height: 350vh;
     margin-left: -50%;
     transform-origin: 100% 0 0;
     width: 200%;
     opacity: var(--grid-opacity);
     background-image: 
-      linear-gradient(to right, rgba(59, 130, 246, 0.25) 1px, transparent 0),
-      linear-gradient(to bottom, rgba(59, 130, 246, 0.25) 1px, transparent 0);
+      linear-gradient(to right, rgba(59, 130, 246, 0.35) 1.5px, transparent 0),
+      linear-gradient(to bottom, rgba(59, 130, 246, 0.35) 1.5px, transparent 0);
   }
 
   :root[data-theme='light'] .retro-grid-lines {
     background-image: 
-      linear-gradient(to right, rgba(37, 99, 235, 0.15) 1px, transparent 0),
-      linear-gradient(to bottom, rgba(37, 99, 235, 0.15) 1px, transparent 0);
+      linear-gradient(to right, rgba(37, 99, 235, 0.22) 1.5px, transparent 0),
+      linear-gradient(to bottom, rgba(37, 99, 235, 0.22) 1.5px, transparent 0);
   }
 
-  .retro-grid-gradient {
+  .retro-grid-vignette {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to bottom, transparent 0%, var(--sl-color-bg, #070b14) 90%);
+    background: radial-gradient(circle at 50% 40%, transparent 20%, rgba(7, 11, 20, 0.65) 90%);
+    pointer-events: none;
+  }
+
+  :root[data-theme='light'] .retro-grid-vignette {
+    background: radial-gradient(circle at 50% 40%, transparent 20%, rgba(248, 250, 252, 0.6) 90%);
   }
 
   @keyframes retro-grid-scroll {

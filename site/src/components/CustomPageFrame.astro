@@ -1,0 +1,26 @@
+---
+import Default from '@astrojs/starlight/components/PageFrame.astro';
+import type { Props } from '@astrojs/starlight/props';
+import SidebarToggle from './SidebarToggle.astro';
+import RetroGrid from './RetroGrid.astro';
+
+const { hasSidebar } = Astro.props;
+---
+
+<!-- Magic UI Fullscreen Animated Background Grid -->
+<RetroGrid angle={62} opacity={0.55} cellSize={58} />
+
+<Default {...Astro.props}>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
+
+<!-- Magic UI Floating Sidebar Toggle Button (Only on documentation pages with sidebars) -->
+{hasSidebar ? (
+  <SidebarToggle />
+) : (
+  <script is:inline>
+    document.documentElement.removeAttribute('data-sidebar-collapsed');
+  </script>
+)}

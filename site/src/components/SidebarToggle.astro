@@ -1,0 +1,260 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<!-- Magic UI Floating Sidebar Toggle Button -->
+<div class={`sidebar-toggle-wrap ${className}`} id="sidebar-toggle-container">
+  <button 
+    id="sidebar-toggle-btn"
+    class="sidebar-toggle-button"
+    type="button"
+    aria-label="Toggle sidebar width"
+    title="Toggle sidebar width (Ctrl+B)"
+  >
+    <!-- Shimmer animated border slide -->
+    <span class="btn-shimmer"></span>
+
+    <span class="btn-inner">
+      <!-- Icon for Expanded State (shows collapse arrow) -->
+      <span class="icon-state icon-expanded">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          <line x1="9" x2="9" y1="3" y2="21"/>
+          <path d="m14 9-3 3 3 3"/>
+        </svg>
+        <span class="btn-label">Collapse</span>
+      </span>
+
+      <!-- Icon for Collapsed State (shows expand arrow & pulse dot) -->
+      <span class="icon-state icon-collapsed">
+        <span class="expand-pulse-dot"></span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+          <line x1="9" x2="9" y1="3" y2="21"/>
+          <path d="m12 9 3 3-3 3"/>
+        </svg>
+        <span class="btn-label">Expand</span>
+      </span>
+
+      <span class="kbd-badge">Ctrl+B</span>
+    </span>
+  </button>
+</div>
+
+<style>
+  .sidebar-toggle-wrap {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 100;
+    pointer-events: auto;
+  }
+
+  .sidebar-toggle-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0.45rem 0.85rem;
+    border-radius: 9999px;
+    background: rgba(13, 19, 33, 0.85);
+    border: 1.5px solid rgba(59, 130, 246, 0.35);
+    color: #e2e8f0;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), 0 0 16px rgba(59, 130, 246, 0.15);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  :root[data-theme='light'] .sidebar-toggle-button {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(203, 213, 225, 0.9);
+    color: #0f172a;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .sidebar-toggle-button:hover {
+    transform: translateY(-2px) scale(1.02);
+    border-color: rgba(96, 165, 250, 0.6);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45), 0 0 24px rgba(59, 130, 246, 0.3);
+  }
+
+  .sidebar-toggle-button:active {
+    transform: scale(0.97);
+  }
+
+  .btn-shimmer {
+    position: absolute;
+    inset: -150%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 70deg,
+      #3b82f6 90deg,
+      #60a5fa 105deg,
+      transparent 125deg,
+      transparent 360deg
+    );
+    animation: shimmer-spin 6s linear infinite;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes shimmer-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .btn-inner {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .icon-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  /* Default (expanded): show icon-expanded, hide icon-collapsed */
+  .icon-collapsed {
+    display: none;
+  }
+
+  /* Collapsed state */
+  :global(html[data-sidebar-collapsed="true"]) .icon-expanded {
+    display: none;
+  }
+
+  :global(html[data-sidebar-collapsed="true"]) .icon-collapsed {
+    display: inline-flex;
+  }
+
+  :global(html[data-sidebar-collapsed="true"]) .sidebar-toggle-button {
+    background: rgba(30, 58, 138, 0.35);
+    border-color: rgba(96, 165, 250, 0.5);
+  }
+
+  .expand-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: pulse-dot-anim 1.5s infinite ease-in-out;
+  }
+
+  @keyframes pulse-dot-anim {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.4; }
+  }
+
+  .btn-label {
+    font-family: var(--sl-font, sans-serif);
+  }
+
+  .kbd-badge {
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-family: var(--sl-font-mono, monospace);
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+  }
+
+  :root[data-theme='light'] .kbd-badge {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+    color: #475569;
+  }
+
+  /* Hide toggle button on very small screens where mobile menu toggle takes over */
+  @media (max-width: 49.99rem) {
+    .sidebar-toggle-wrap {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = 'starlight-sidebar-collapsed';
+
+  function applySidebarState(isCollapsed: boolean) {
+    if (isCollapsed) {
+      document.documentElement.setAttribute('data-sidebar-collapsed', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-sidebar-collapsed');
+    }
+    localStorage.setItem(STORAGE_KEY, String(isCollapsed));
+  }
+
+  function toggleSidebar() {
+    const isCurrentlyCollapsed = document.documentElement.getAttribute('data-sidebar-collapsed') === 'true';
+    applySidebarState(!isCurrentlyCollapsed);
+  }
+
+  function initToggle() {
+    const btn = document.getElementById('sidebar-toggle-btn');
+    if (!btn) return;
+
+    // Attach click listener
+    btn.onclick = (e) => {
+      e.preventDefault();
+      toggleSidebar();
+    };
+
+    // Keyboard shortcut (Ctrl+B or Cmd+B)
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        // Prevent default browser action (e.g. Bookmark bar)
+        e.preventDefault();
+        toggleSidebar();
+      }
+    });
+  }
+
+  function syncState() {
+    const hasSidebarOnPage = document.documentElement.hasAttribute('data-has-sidebar');
+    if (!hasSidebarOnPage) {
+      document.documentElement.removeAttribute('data-sidebar-collapsed');
+      return;
+    }
+    const saved = localStorage.getItem(STORAGE_KEY) === 'true';
+    if (saved) {
+      document.documentElement.setAttribute('data-sidebar-collapsed', 'true');
+    } else {
+      document.documentElement.removeAttribute('data-sidebar-collapsed');
+    }
+  }
+
+  // Restore saved preference immediately
+  syncState();
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      syncState();
+      initToggle();
+    });
+  } else {
+    initToggle();
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    syncState();
+    initToggle();
+  });
+</script>

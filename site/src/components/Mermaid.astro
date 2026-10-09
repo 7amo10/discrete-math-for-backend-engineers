@@ -1,0 +1,167 @@
+---
+interface Props {
+  code: string;
+  title?: string;
+  class?: string;
+}
+
+const { code, title = "", class: className = "" } = Astro.props;
+---
+
+<div class={`mermaid-card ${className}`}>
+  {title && (
+    <div class="mermaid-card-header">
+      <div class="mermaid-dots">
+        <span class="m-dot m-dot-blue"></span>
+      </div>
+      <span class="mermaid-title-text">{title}</span>
+    </div>
+  )}
+  <div class="mermaid-wrapper">
+    <div class="mermaid">{code.trim()}</div>
+  </div>
+</div>
+
+<style>
+  .mermaid-card {
+    position: relative;
+    margin: 2.25rem 0;
+    border-radius: 1rem;
+    background: rgba(13, 19, 33, 0.75);
+    border: 1.5px solid rgba(59, 130, 246, 0.25);
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  }
+
+  :root[data-theme='light'] .mermaid-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  .mermaid-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1.4rem;
+    background: rgba(15, 23, 42, 0.65);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  :root[data-theme='light'] .mermaid-card-header {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .mermaid-dots {
+    display: flex;
+    align-items: center;
+  }
+
+  .m-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .m-dot-blue {
+    background: #3b82f6;
+    box-shadow: 0 0 8px #3b82f6;
+  }
+
+  .mermaid-title-text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #93c5fd;
+  }
+
+  :root[data-theme='light'] .mermaid-title-text {
+    color: #2563eb;
+  }
+
+  .mermaid-wrapper {
+    padding: 2rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
+  }
+
+  .mermaid {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-height: 120px;
+  }
+
+  /* Make rendered SVG fill nicely */
+  .mermaid :global(svg) {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+</style>
+
+<script>
+  import mermaid from 'mermaid';
+
+  let isInitialized = false;
+
+  function initAndRender() {
+    if (!isInitialized) {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        securityLevel: 'loose',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        themeVariables: {
+          darkMode: true,
+          background: 'transparent',
+          primaryColor: '#1e293b',
+          primaryTextColor: '#f8fafc',
+          primaryBorderColor: '#3b82f6',
+          lineColor: '#60a5fa',
+          secondaryColor: '#0f766e',
+          tertiaryColor: '#090d16',
+          mainBkg: '#0f172a',
+          nodeBorder: '#3b82f6',
+          clusterBkg: '#090d16',
+          clusterBorder: '#3b82f6',
+          titleColor: '#93c5fd',
+          edgeLabelBackground: '#090d16',
+          actorBkg: '#0f172a',
+          actorBorder: '#3b82f6',
+          actorTextColor: '#f8fafc',
+          signalColor: '#60a5fa',
+          signalTextColor: '#f8fafc',
+          labelBoxBkgColor: '#0f172a',
+          labelBoxBorderColor: '#3b82f6',
+          labelTextColor: '#f8fafc',
+          loopTextColor: '#93c5fd',
+          noteBkgColor: '#1e293b',
+          noteBorderColor: '#60a5fa',
+          noteTextColor: '#f8fafc',
+        },
+      });
+      isInitialized = true;
+    }
+
+    const elements = document.querySelectorAll<HTMLElement>('.mermaid:not([data-processed="true"])');
+    if (elements.length > 0) {
+      mermaid.run({
+        nodes: Array.from(elements),
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAndRender);
+  } else {
+    initAndRender();
+  }
+
+  document.addEventListener('astro:page-load', initAndRender);
+</script>
