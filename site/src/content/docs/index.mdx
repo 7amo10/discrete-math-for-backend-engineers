@@ -1,0 +1,48 @@
+---
+title: Discrete Math for Backend Engineers
+description: Bridging MIT 6.042J discrete mathematics directly to production Java architectures and distributed systems.
+template: splash
+hero:
+  tagline: A practical engineering lab and editorial field guide translating formal discrete proofs into high-performance backend systems.
+  actions:
+    - text: Start with Week 1
+      link: /week-01-invariants/
+      icon: right-arrow
+      variant: primary
+    - text: View GitHub Repository
+      link: https://github.com/7amo10/discrete-math-for-backend-engineers
+      icon: external
+      variant: secondary
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why Math for Backend Engineering?
+
+High-scale backend architectures are not built on ad-hoc intuition; they are built on formal invariants, algebraic structures, and graph theorems:
+
+<CardGrid stagger>
+  <Card title="State Machine Invariants" icon="seti:lock">
+    Proving financial balance conservation ($\sum B_i(t_n) \equiv \sum B_i(t_0)$) across concurrent transfers and partial Saga rollbacks.
+  </Card>
+  <Card title="Modular Arithmetic & Hashing" icon="seti:graphql">
+    Preventing hotspot partitioning via consistent hash rings ($[0, 2^{32}-1]$) and virtual node load balancing in Kafka and Cassandra.
+  </Card>
+  <Card title="Graph Theory & Cycles" icon="seti:project">
+    Eliminating transactional deadlocks in database storage engines via Wait-For Graph (WFG) cycle detection in $O(V + E)$ time.
+  </Card>
+  <Card title="Posets & Topological Sorting" icon="setting">
+    Orchestrating workflow DAG execution engines, identifying concurrent antichains, and resolving Spring Bean circular dependencies.
+  </Card>
+</CardGrid>
+
+---
+
+## The 4-Week Discrete Curriculum
+
+| Week | Mathematical Topic | Backend Systems Problem Space | Verification Lab |
+| :---: | :--- | :--- | :--- |
+| **01** | **Propositions & State Invariants** | Double-Entry Ledgers & Saga Rollbacks | `AccountTransferInvariantTest` |
+| **02** | **Number Theory & Modular Hashing** | Consistent Hash Rings & Virtual Node Balancing | `HashRingDistributionTest` |
+| **03** | **Graph Theory & Network Routing** | Wait-For Graph (WFG) Deadlock Resolution | `DeadlockResolverTest` |
+| **04** | **Relations, Posets & Task Scheduling** | Workflow DAG Orchestration & Antichain Concurrency | `DagSchedulerTest` |
