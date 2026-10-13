@@ -1,4 +1,6 @@
 ---
+import { formatUrl } from '../utils/path';
+
 interface Props {
   href: string;
   text: string;
@@ -6,9 +8,10 @@ interface Props {
 }
 
 const { href, text, class: className = "" } = Astro.props;
+const targetHref = formatUrl(href);
 ---
 
-<a href={href} class={`shimmer-button ${className}`}>
+<a href={targetHref} class={`shimmer-button ${className}`}>
   <span class="shimmer-slide"></span>
   <span class="shimmer-content">
     {text}

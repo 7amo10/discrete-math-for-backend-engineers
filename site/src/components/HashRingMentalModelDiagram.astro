@@ -1,0 +1,329 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class={`excalidraw-container ${className}`}>
+  <div class="diagram-toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-icon">✎</span>
+      <span class="toolbar-title">CONSISTENT HASH RING &amp; VNODE MENTAL MODEL</span>
+    </div>
+    <div class="toolbar-tags">
+      <span class="tool-tag tag-cyan">Modulo 2³² Ring</span>
+      <span class="tool-tag tag-gold">Minimal Migration K/(N+1)</span>
+    </div>
+  </div>
+
+  <div class="diagram-canvas-wrap">
+    <svg 
+      viewBox="0 0 960 560" 
+      class="excalidraw-svg" 
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Excalidraw mental model diagram of consistent hashing ring, virtual nodes, and minimal migration"
+    >
+      <defs>
+        <!-- Gradients -->
+        <linearGradient id="ringDarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95" />
+          <stop offset="100%" stop-color="#090d16" stop-opacity="0.95" />
+        </linearGradient>
+        <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.12" />
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="splitArcGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10b981" stop-opacity="0.3" />
+          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.1" />
+        </linearGradient>
+
+        <!-- Arrow Markers -->
+        <marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4" />
+        </marker>
+        <marker id="arrowGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981" />
+        </marker>
+        <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+        </marker>
+        <marker id="arrowRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#ef4444" />
+        </marker>
+
+        <!-- Hand-drawn blueprint wobble filter -->
+        <filter id="handDrawnRing" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.4" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+
+      <!-- Outer Blueprint Boundary -->
+      <rect 
+        x="20" y="20" width="920" height="520" rx="18" 
+        fill="url(#ringDarkGrad)" 
+        stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="8 6" 
+        filter="url(#handDrawnRing)"
+        opacity="0.9"
+      />
+
+      <!-- ================= LEFT: THE MODULO 2^32 CONSISTENT HASH RING ================= -->
+      <g transform="translate(10, 40)">
+        <!-- Ambient radial glow inside the circle -->
+        <circle cx="230" cy="240" r="180" fill="url(#ringGlow)" />
+
+        <!-- Main Circular Ring Track (Modulo 2^32) -->
+        <circle 
+          cx="230" cy="240" r="160" 
+          fill="none" 
+          stroke="#3b82f6" stroke-width="3" stroke-dasharray="5 3"
+          filter="url(#handDrawnRing)"
+        />
+
+        <!-- Ring Keypoints & Modulo Annotations -->
+        <!-- 0 / 2^32 (Top: 12 o'clock) -->
+        <line x1="230" y1="72" x2="230" y2="88" stroke="#60a5fa" stroke-width="2.5" />
+        <text x="230" y="64" fill="#93c5fd" font-family="'Fira Code', monospace" font-size="12" font-weight="700" text-anchor="middle">
+          0 ≡ 2³²
+        </text>
+
+        <!-- 2^31 - 1 (Bottom: 6 o'clock) -->
+        <line x1="230" y1="392" x2="230" y2="408" stroke="#60a5fa" stroke-width="2.5" />
+        <text x="230" y="426" fill="#93c5fd" font-family="'Fira Code', monospace" font-size="12" font-weight="700" text-anchor="middle">
+          2³¹ - 1
+        </text>
+
+        <!-- Clockwise Direction Indicator Arrow -->
+        <path 
+          d="M 230 100 A 140 140 0 0 1 370 240" 
+          fill="none" 
+          stroke="rgba(6, 182, 212, 0.4)" stroke-width="2" stroke-dasharray="4 4"
+          marker-end="url(#arrowCyan)"
+        />
+        <text x="325" y="110" fill="#06b6d4" font-family="'Caveat', cursive, sans-serif" font-size="16" font-weight="700">
+          Clockwise Search (mod 2³²)
+        </text>
+
+        <!-- Split Arc Highlight (The only migrated segment when Node D is added) -->
+        <path 
+          d="M 117 127 A 160 160 0 0 1 230 80" 
+          fill="none" 
+          stroke="#10b981" stroke-width="8" stroke-linecap="round" opacity="0.65"
+        />
+
+        <!-- Node A Tokens (Blue) -->
+        <!-- Token A1 (~ 2 o'clock) -->
+        <circle cx="343" cy="127" r="13" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2.5" filter="url(#handDrawnRing)" />
+        <text x="343" y="132" fill="#ffffff" font-family="'Fira Code', monospace" font-size="11" font-weight="800" text-anchor="middle">A₁</text>
+
+        <!-- Token A2 (~ 8 o'clock) -->
+        <circle cx="117" cy="353" r="13" fill="#1e3a8a" stroke="#60a5fa" stroke-width="2.5" filter="url(#handDrawnRing)" />
+        <text x="117" y="358" fill="#ffffff" font-family="'Fira Code', monospace" font-size="11" font-weight="800" text-anchor="middle">A₂</text>
+
+        <!-- Node B Tokens (Amber) -->
+        <!-- Token B1 (~ 5 o'clock) -->
+        <circle cx="343" cy="353" r="13" fill="#78350f" stroke="#f59e0b" stroke-width="2.5" filter="url(#handDrawnRing)" />
+        <text x="343" y="358" fill="#ffffff" font-family="'Fira Code', monospace" font-size="11" font-weight="800" text-anchor="middle">B₁</text>
+
+        <!-- Token B2 (~ 11 o'clock) -->
+        <circle cx="117" cy="127" r="13" fill="#78350f" stroke="#f59e0b" stroke-width="2.5" filter="url(#handDrawnRing)" />
+        <text x="117" y="132" fill="#ffffff" font-family="'Fira Code', monospace" font-size="11" font-weight="800" text-anchor="middle">B₂</text>
+
+        <!-- Node C Token (~ 3 o'clock - Violet) -->
+        <circle cx="390" cy="240" r="13" fill="#4c1d95" stroke="#a78bfa" stroke-width="2.5" filter="url(#handDrawnRing)" />
+        <text x="390" y="245" fill="#ffffff" font-family="'Fira Code', monospace" font-size="11" font-weight="800" text-anchor="middle">C₁</text>
+
+        <!-- Incoming Partition Key K (Red Diamond Pin) -->
+        <g transform="translate(300, 160)">
+          <polygon points="0,-10 9,0 0,10 -9,0" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" />
+          <text x="15" y="4" fill="#fca5a5" font-family="'Fira Code', monospace" font-size="11" font-weight="700">key: "user-4892"</text>
+          <!-- Clockwise routing ray to Token B1 -->
+          <path d="M 5 8 Q 28 60 40 85" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3 3" marker-end="url(#arrowRed)" />
+        </g>
+
+        <!-- Newly Added Node D (Green - Splits the arc before B2) -->
+        <circle cx="173" cy="98" r="14" fill="#064e3b" stroke="#34d399" stroke-width="3" filter="url(#handDrawnRing)" />
+        <text x="173" y="103" fill="#ffffff" font-family="'Fira Code', monospace" font-size="12" font-weight="800" text-anchor="middle">D*</text>
+
+        <text x="150" y="45" fill="#34d399" font-family="'Caveat', cursive, sans-serif" font-size="15" font-weight="700">
+          Node D joins → Only arc (B₂, D] migrates!
+        </text>
+        <path d="M 160 55 L 170 80" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowGreen)" />
+      </g>
+
+      <!-- ================= RIGHT: COMPARATIVE ANALYSIS & MATHEMATICAL GUARANTEES ================= -->
+      <g transform="translate(492, 50)">
+        <!-- Card Title -->
+        <text x="0" y="25" fill="#f8fafc" font-family="'Inter', sans-serif" font-size="17" font-weight="800">
+          Discrete Sharding Dynamics: Naive vs. Ring
+        </text>
+        <text x="0" y="46" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="12">
+          Mathematical comparison upon cluster expansion from 
+          N = 10 to N = 11 nodes:
+        </text>
+
+        <!-- Card 1: Naive Modulo Failure Mode (Red Box) -->
+        <g transform="translate(0, 65)">
+          <rect x="0" y="0" width="410" height="110" rx="10" fill="rgba(239, 68, 68, 0.08)" stroke="#ef4444" stroke-width="1.4" />
+          <text x="16" y="26" fill="#f87171" font-family="'Inter', sans-serif" font-size="13" font-weight="700">
+            ✕ Naive Modulo: node = hash(k) mod N
+          </text>
+          <text x="16" y="48" fill="#fca5a5" font-family="'Fira Code', monospace" font-size="11">
+            N → N + 1: consecutive integers are coprime
+          </text>
+          <text x="16" y="70" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">
+            Migration Rate: <tspan fill="#ef4444" font-weight="700">N / (N + 1) ≈ 90.9% of all keys move!</tspan>
+          </text>
+          <text x="16" y="90" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10.5">
+            Consequence: Massive cache stampede &amp; network saturation for all servers.
+          </text>
+        </g>
+
+        <!-- Card 2: Consistent Hash Ring Bound (Green Box) -->
+        <g transform="translate(0, 190)">
+          <rect x="0" y="0" width="412" height="115" rx="10" fill="rgba(16, 185, 129, 0.08)" stroke="#10b981" stroke-width="1.4" />
+          <text x="16" y="26" fill="#34d399" font-family="'Inter', sans-serif" font-size="13" font-weight="700">
+            ✓ Consistent Hash Ring (Modulo 2³² Circle)
+          </text>
+          <text x="16" y="48" fill="#6ee7b7" font-family="'Fira Code', monospace" font-size="11">
+            Minimal Migration Invariant: only 1 arc splits
+          </text>
+          <text x="16" y="70" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="11">
+            Migration Rate: <tspan fill="#34d399" font-weight="700">K / (N + 1) ≈ 9.09% of keys move!</tspan>
+          </text>
+          <text x="16" y="90" fill="#94a3b8" font-family="'Inter', sans-serif" font-size="10.5">
+            Remaining 90.91% of keys stay untouched on existing servers. Zero stampede.
+          </text>
+        </g>
+
+        <!-- Card 3: Pigeonhole Principle & Virtual Nodes (Amber Box) -->
+        <g transform="translate(0, 320)">
+          <rect x="0" y="0" width="412" height="135" rx="10" fill="rgba(245, 158, 11, 0.08)" stroke="#f59e0b" stroke-width="1.4" />
+          <text x="16" y="26" fill="#fbbf24" font-family="'Inter', sans-serif" font-size="13" font-weight="700">
+            ⚡ Pigeonhole Hotspot Smoothing 
+          </text>
+          <text x="16" y="48" fill="#fde68a" font-family="'Fira Code', monospace" font-size="11">
+            V = 1 (No Vnodes): random arc lengths vary wildly
+          </text>
+          <text x="16" y="68" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5">
+            • 1 server absorbs 40–50% of traffic (severe partition hotspots).
+          </text>
+          <text x="16" y="88" fill="#fde68a" font-family="'Fira Code', monospace" font-size="11">
+            V = 150 (Virtual Nodes): ring chopped into N·V pigeonholes
+          </text>
+          <text x="16" y="108" fill="#cbd5e1" font-family="'Inter', sans-serif" font-size="10.5">
+            • Load variance drops as <tspan fill="#f59e0b" font-weight="700">O(1 / √V)</tspan>. Standard deviation drops by &gt; 3.5×.
+          </text>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .excalidraw-container {
+    position: relative;
+    margin: 2.5rem 0;
+    border-radius: 1.25rem;
+    background: rgba(13, 19, 33, 0.85);
+    border: 1.5px solid rgba(59, 130, 246, 0.35);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 24px rgba(59, 130, 246, 0.12);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  :root[data-theme='light'] .excalidraw-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .diagram-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1.4rem;
+    background: rgba(15, 23, 42, 0.7);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  :root[data-theme='light'] .diagram-toolbar {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .toolbar-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .toolbar-icon {
+    color: #60a5fa;
+    font-size: 1.1rem;
+  }
+
+  .toolbar-title {
+    font-family: var(--sl-font, sans-serif);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #f8fafc;
+    text-transform: uppercase;
+  }
+
+  :root[data-theme='light'] .toolbar-title {
+    color: #0f172a;
+  }
+
+  .toolbar-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tool-tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-family: var(--sl-font-mono, monospace);
+    font-weight: 600;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #93c5fd;
+  }
+
+  .tag-cyan {
+    background: rgba(6, 182, 212, 0.15);
+    border-color: rgba(6, 182, 212, 0.35);
+    color: #67e8f9;
+  }
+
+  .tag-gold {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fde68a;
+  }
+
+  .diagram-canvas-wrap {
+    padding: 1.25rem 1rem;
+    overflow-x: auto;
+  }
+
+  .excalidraw-svg {
+    width: 100%;
+    height: auto;
+    min-width: 780px;
+    display: block;
+    margin: 0 auto;
+  }
+</style>

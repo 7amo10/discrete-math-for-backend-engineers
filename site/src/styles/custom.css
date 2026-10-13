@@ -368,6 +368,17 @@ table tr:last-child td {
   border-bottom: none;
 }
 
+/* Ensure markdown tables maintain left/right edge padding */
+.sl-markdown-content table :is(th:first-child, td:first-child) {
+  padding-left: 1.5rem !important;
+  padding-inline-start: 1.5rem !important;
+}
+
+.sl-markdown-content table :is(th:last-child, td:last-child) {
+  padding-right: 1.5rem !important;
+  padding-inline-end: 1.5rem !important;
+}
+
 /* Status Badges */
 .lab-badge {
   display: inline-flex;

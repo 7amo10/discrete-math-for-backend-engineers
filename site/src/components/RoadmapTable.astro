@@ -1,4 +1,6 @@
 ---
+import { formatUrl } from '../utils/path';
+
 interface RoadmapItem {
   week: string;
   topic: string;
@@ -23,13 +25,13 @@ const roadmap: RoadmapItem[] = [
   },
   {
     week: "02",
-    topic: "Relations, Posets & Task Scheduling",
-    mitChapter: "MIT 6.042J Chapter 7",
-    system: "Workflow DAG Engine & Antichain Concurrency",
-    systemPill: "Spring IoC & Airflow",
-    javaModule: "week02_posets",
-    status: "upcoming",
-    link: "/week-02-posets-scheduling/",
+    topic: "Number Theory & Modular Hashing",
+    mitChapter: "MIT 6.042J Chapter 4 & 11",
+    system: "Consistent Hash Rings & Virtual Nodes",
+    systemPill: "Kafka & Cassandra",
+    javaModule: "week02_hashing",
+    status: "active",
+    link: "/week-02-modular-hashing/",
   },
   {
     week: "03",
@@ -43,18 +45,18 @@ const roadmap: RoadmapItem[] = [
   },
   {
     week: "04",
-    topic: "Number Theory & Modular Hashing",
-    mitChapter: "MIT 6.042J Chapter 4 & 11",
-    system: "Consistent Hash Rings & Virtual Nodes",
-    systemPill: "Kafka & Cassandra",
-    javaModule: "week04_hashing",
+    topic: "Relations, Posets & Task Scheduling",
+    mitChapter: "MIT 6.042J Chapter 7",
+    system: "Workflow DAG Engine & Antichain Concurrency",
+    systemPill: "Spring IoC & Airflow",
+    javaModule: "week04_posets",
     status: "upcoming",
-    link: "/week-04-modular-hashing/",
+    link: "/week-04-posets-scheduling/",
   },
 ];
 ---
 
-<div class="roadmap-card">
+<div class="roadmap-card not-content">
   <div class="roadmap-header">
     <div class="roadmap-badge">
       <span class="pulse-indicator"></span>
@@ -84,7 +86,7 @@ const roadmap: RoadmapItem[] = [
             <td class="cell-math">
               <div class="math-topic">
                 {item.link ? (
-                  <a href={item.link} class="topic-link">{item.topic}</a>
+                  <a href={formatUrl(item.link)} class="topic-link">{item.topic}</a>
                 ) : (
                   item.topic
                 )}
@@ -238,6 +240,18 @@ const roadmap: RoadmapItem[] = [
     padding: 1.15rem 1.25rem;
     vertical-align: middle;
     border: none;
+  }
+
+  .roadmap-table th:first-child,
+  .roadmap-table td:first-child {
+    padding-left: 2rem !important;
+    padding-inline-start: 2rem !important;
+  }
+
+  .roadmap-table th:last-child,
+  .roadmap-table td:last-child {
+    padding-right: 2rem !important;
+    padding-inline-end: 2rem !important;
   }
 
   .cell-wk {
