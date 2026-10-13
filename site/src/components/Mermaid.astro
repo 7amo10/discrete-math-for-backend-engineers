@@ -1,11 +1,13 @@
 ---
 interface Props {
-  code: string;
+  code?: string;
+  chart?: string;
   title?: string;
   class?: string;
 }
 
-const { code, title = "", class: className = "" } = Astro.props;
+const { code, chart, title = "", class: className = "" } = Astro.props;
+const diagramCode = (code ?? chart ?? "").trim();
 ---
 
 <div class={`mermaid-card ${className}`}>
@@ -18,7 +20,7 @@ const { code, title = "", class: className = "" } = Astro.props;
     </div>
   )}
   <div class="mermaid-wrapper">
-    <div class="mermaid">{code.trim()}</div>
+    <div class="mermaid">{diagramCode}</div>
   </div>
 </div>
 

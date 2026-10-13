@@ -2,16 +2,39 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import { visit } from 'unist-util-visit';
 
-const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.GITHUB_ACTIONS);
+const SITE_BASE = '/discrete-math-for-backend-engineers';
+
+/**
+ * Automatically rewrites internal root-relative links in Markdown/MDX
+ * to include the base path, preventing 404s on GitHub Pages and unifying
+ * local dev and deployed environments.
+ */
+function rehypePrefixBase() {
+  return (tree) => {
+    visit(tree, 'element', (node) => {
+      if (node.tagName === 'a' && node.properties && typeof node.properties.href === 'string') {
+        const href = node.properties.href;
+        if (
+          href.startsWith('/') &&
+          !href.startsWith(SITE_BASE) &&
+          !href.startsWith('//')
+        ) {
+          node.properties.href = `${SITE_BASE}${href}`;
+        }
+      }
+    });
+  };
+}
 
 // https://astro.build/config
 export default defineConfig({
   site: 'https://7amo10.github.io',
-  base: isProd ? '/discrete-math-for-backend-engineers' : '/',
+  base: SITE_BASE,
   markdown: {
     remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex],
+    rehypePlugins: [rehypeKatex, rehypePrefixBase],
   },
   integrations: [
     starlight({
@@ -32,7 +55,8 @@ export default defineConfig({
         {
           label: 'Foundations',
           items: [
-            { label: 'Curriculum & Systems Overview', link: '/' },
+            { label: 'Overview & Systems Intro', link: '/' },
+            { label: 'Curriculum & Modules Index', slug: 'curriculum' },
           ],
         },
         {
@@ -43,11 +67,17 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Week 2: Number Theory & Modular Hashing',
+          items: [
+            { label: 'Editorial: Modular Rings & Consistent Hashing', slug: 'week-02-modular-hashing' },
+            { label: 'Lab: Hash Ring & Vnodes Challenge', slug: 'week-02-challenge' },
+          ],
+        },
+        {
           label: 'Upcoming Discrete Modules',
           items: [
-            { label: 'Week 2: Relations & Task Scheduling', slug: 'week-02-posets-scheduling' },
             { label: 'Week 3: Graph Theory & Routing', slug: 'week-03-graph-topologies' },
-            { label: 'Week 4: Number Theory & Hashing', slug: 'week-04-modular-hashing' },
+            { label: 'Week 4: Relations & Task Scheduling', slug: 'week-04-posets-scheduling' },
           ],
         },
       ],

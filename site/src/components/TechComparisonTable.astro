@@ -44,7 +44,7 @@ const comparisons: ComparisonItem[] = [
 ];
 ---
 
-<div class="comparison-container">
+<div class="comparison-container not-content">
   <div class="comparison-header">
     <div class="header-badge">
       <span class="badge-dot"></span>
@@ -222,6 +222,18 @@ const comparisons: ComparisonItem[] = [
     padding: 1.25rem 1.5rem;
     vertical-align: top;
     border: none;
+  }
+
+  .comparison-table th:first-child,
+  .comparison-table td:first-child {
+    padding-left: 2rem !important;
+    padding-inline-start: 2rem !important;
+  }
+
+  .comparison-table th:last-child,
+  .comparison-table td:last-child {
+    padding-right: 2rem !important;
+    padding-inline-end: 2rem !important;
   }
 
   .challenge-title {

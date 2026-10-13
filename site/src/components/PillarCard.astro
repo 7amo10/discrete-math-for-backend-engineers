@@ -47,7 +47,7 @@ const {
         <span class="pillar-number">{number}</span>
       </div>
       <div class="pillar-icon-badge" style={`--accent-color: ${beamColorFrom};`}>
-        <span>{icon}</span>
+        <span class="pillar-icon-content" set:html={icon}></span>
       </div>
     </div>
 

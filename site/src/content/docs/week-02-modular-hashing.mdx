@@ -1,0 +1,292 @@
+---
+title: "Week 2: Number Theory, Modular Arithmetic & Consistent Hashing"
+description: "Connecting MIT 6.042J Chapters 4 & 11 (divisibility, modular congruence, and the Pigeonhole Principle) directly to Kafka partition keying, Cassandra consistent hash rings, and virtual nodes."
+sidebar:
+  order: 2
+---
+
+import Terminal from '../../components/Terminal.astro';
+import Mermaid from '../../components/Mermaid.astro';
+import HashRingMentalModelDiagram from '../../components/HashRingMentalModelDiagram.astro';
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
+<div class="hand-drawn" style="text-align: center; margin: 1rem auto 2rem; display: block;">
+  "In distributed storage, we do not shard data by chance — we map keys onto modular rings where cluster growth moves only K / (N + 1) items."
+</div>
+
+---
+
+## The Academic Spine: MIT 6.042J Readings
+
+This editorial synthesizes the foundational number theoretic principles from **MIT 6.042J: Mathematics for Computer Science (Fall 2010)**:
+
+| Module Component | Identifier | Reading / Video Source | Core Concept |
+| :--- | :---: | :--- | :--- |
+| **Number Theory I** | **Ch. 4** | *MIT 6.042J Chapter 4* $\bullet$ Lecture 4 | Divisibility, Greatest Common Divisor ($\gcd$), Euclidean Algorithm, The Pulverizer |
+| **Number Theory II** | **Ch. 4** | *MIT 6.042J Chapter 4* $\bullet$ Lecture 5 | Modular Congruence, Multiplicative Inverses, Coprimality, Euler's Totient |
+| **Pigeonhole Principle** | **Ch. 11** | *MIT 6.042J Chapter 11* $\bullet$ Lecture 16 | Cardinality limits, collisions, Dirichlet intervals, and variance bounds |
+
+<Aside type="tip" title="Hands-On Verification Suite">
+This editorial provides the formal theoretical foundation. To review the runnable Java 21 test lab, resharding simulations, and inductive proofs, visit the [Week 2 Lab Challenge](/week-02-challenge/).
+</Aside>
+
+---
+
+## 1. Number Theoretic Foundations for Partitioning
+
+Every sharded database, cache cluster, and message broker relies on projecting an infinite or massive key universe $K$ onto a finite set of $N$ physical storage nodes.
+
+### 1.1 The Division Theorem and Residue Classes
+
+In MIT 6.042J Chapter 4, the **Division Theorem** guarantees:
+
+<div class="math-theorem">
+  <div class="theorem-header">Theorem 4.1.2 (The Division Theorem)</div>
+  <p>
+    Let $a$ be any integer and $m$ be a positive integer ($m > 0$). There exist unique integers $q$ (quotient) and $r$ (remainder) such that:
+  </p>
+  $$a = q \cdot m + r \quad \text{where } 0 \le r < m$$
+</div>
+
+In backend systems, $r = a \pmod m$ partitions the entire set of integers $\mathbb{Z}$ into exactly $m$ equivalence classes (residue classes):
+$$\mathbb{Z}_m = \{0, 1, 2, \ldots, m - 1\}$$
+
+When an application hashes a database key or user ID, the hash output is an element of $\mathbb{Z}_m$.
+
+### 1.2 Modular Congruence
+
+Two integers $a$ and $b$ are congruent modulo $m$, written:
+$$a \equiv b \pmod m \iff m \mid (a - b)$$
+
+This equivalence relation satisfies reflexivity, symmetry, and transitivity. Crucially, modular arithmetic preserves addition and multiplication:
+$$(a_1 \equiv b_1 \pmod m) \land (a_2 \equiv b_2 \pmod m) \implies a_1 \cdot a_2 \equiv b_1 \cdot b_2 \pmod m$$
+
+### 1.3 The Euclidean Algorithm & The Pulverizer (Bézout's Identity)
+
+Computing the Greatest Common Divisor ($\gcd$) of two integers is the foundation of coprimality and modular division:
+$$\gcd(a, b) = \gcd(b, a \pmod b) \quad \text{with base case } \gcd(a, 0) = |a|$$
+
+By **Bézout's Identity**, for any integers $a$ and $b$, there exist integers $s$ and $t$ such that:
+$$s \cdot a + t \cdot b = \gcd(a, b)$$
+
+In MIT 6.042J, the tabular Extended Euclidean Algorithm is known as **The Pulverizer**. It calculates the coefficients $s$ and $t$ in $\mathcal{O}(\log(\min(a, b)))$ steps.
+
+### 1.4 Modular Multiplicative Inverses & Hash Multipliers
+
+In normal arithmetic, division by $a$ is multiplication by $1/a$. In modular arithmetic modulo $m$, the multiplicative inverse $x = a^{-1} \pmod m$ exists if and only if:
+$$a \cdot x \equiv 1 \pmod m$$
+
+<div class="math-theorem">
+  <div class="theorem-header">Theorem 4.3.1 (Existence of Modular Inverses)</div>
+  <p>
+    An integer $a$ has a multiplicative inverse modulo $m$ if and only if $a$ and $m$ are coprime:
+  </p>
+  $$\gcd(a, m) = 1$$
+</div>
+
+#### Production Application: Why Hash Seeds and Multipliers Must Be Coprime
+In hash mixing routines (such as MurmurHash3, FNV-1a, and linear congruential generators):
+$$h_{i+1} = (h_i \cdot c_1) \pmod{2^{32}}$$
+The multiplier constant $c_1 = \text{0xcc9e2d51}$ ($3,432,918,353$) is strictly **odd**.
+
+Because $2^{32}$ has only one prime factor ($2$), any odd integer $c_1$ satisfies $\gcd(c_1, 2^{32}) = 1$. By Theorem 4.3.1, multiplication by $c_1$ is an **invertible permutation (bijection)** on $\mathbb{Z}_{2^{32}}$.
+
+> If a naive engineer chose an even multiplier $c_{\text{even}}$ where $\gcd(c_{\text{even}}, 2^{32}) = 2^k > 1$, every multiplication would shift bits left, collapsing the output into a proper subgroup of size $2^{32-k}$. The lower $k$ bits would become permanently zero, destroying hash entropy and causing massive key collisions!
+
+---
+
+## 2. The Naive Modulo Resharding Catastrophe
+
+Traditional horizontal partitioning (used in simple database sharding or naive Kafka consumer assignments) maps a partition key $k$ to $N$ servers using direct modulo:
+
+$$\text{server}(k) = h(k) \pmod N$$
+
+While simple to implement, this formula contains a fatal mathematical flaw during cluster scaling.
+
+### 2.1 The Coprime Shift: Why Rescaling Moves ~90% of Keys
+
+Suppose an engineering team scales a database cluster from $N = 10$ servers to $N + 1 = 11$ servers to handle increased traffic.
+
+Consider what happens to the key assignments:
+$$\text{Old Server} = h(k) \pmod{10}, \quad \text{New Server} = h(k) \pmod{11}$$
+
+Notice that consecutive integers are **always coprime**:
+$$\gcd(N, N + 1) = \gcd(N, (N + 1) - N) = \gcd(N, 1) = 1$$
+
+Because $\gcd(10, 11) = 1$, by the **Chinese Remainder Theorem**, the residue classes modulo $10$ and modulo $11$ are mutually independent. A key $k$ retains its original server assignment if and only if:
+$$h(k) \pmod{10} = h(k) \pmod{11}$$
+
+This condition requires $h(k) \pmod{10} = r$ and $h(k) \pmod{11} = r$. For a given residue $r \in \{0, 1, \ldots, 9\}$, this single system of congruences has exactly $1$ solution modulo $10 \times 11 = 110$.
+
+Across all $10$ possible values of $r$, exactly $10$ out of every $110$ hash values remain mapped to the same server index:
+$$\mathbb{P}(\text{Key Stays in Place}) = \frac{10}{110} = \frac{1}{11} \approx 9.09\%$$
+
+$$\mathbb{P}(\text{Key Must Migrate}) = 1 - \frac{1}{N + 1} = \frac{N}{N + 1} = \frac{10}{11} \approx \mathbf{90.91\%}$$
+
+### 2.2 Production Failure Mode: The Cache Stampede
+
+When scaling a cluster of $10$ servers to $11$ servers under naive modulo sharding:
+* **Over $90\%$ of all keys are suddenly routed to different servers.**
+* In a distributed cache (Redis, Memcached), $90\%$ of cache entries become instant cache misses.
+* Millions of requests fall through simultaneously to the backing relational database, triggering a catastrophic **thundering herd / cache stampede** that crashes the entire backend infrastructure.
+
+<Mermaid 
+  title="Naive Modulo Resharding Catastrophe (~90.9% Churn)"
+  code={`
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Proxy as Sharding Router (Naive Modulo)
+    participant S0 as Server 0
+    participant S1 as Server 1
+    participant S10 as New Server 10 (Scaled)
+
+    Note over Proxy: Cluster scales: N=10 -> N=11 (gcd(10, 11) = 1)
+    Client->>Proxy: GET key: "user-4892" (h = 492)
+    Note over Proxy: Old: 492 mod 10 = 2<br/>New: 492 mod 11 = 8 (Displaced!)
+    Proxy->>S10: Lookup on Server 8 (Cache Miss!)
+    S10-->>Proxy: null (Data was stored on Server 2)
+    Proxy->>Client: Cache Miss -> Fallback to Primary DB!
+    Note over Client,S10: 90.9% of all cluster requests trigger simultaneous misses!
+`} />
+
+---
+
+## 3. The Consistent Hash Ring Modulo $2^{32}$
+
+To eliminate the $90\%$ churn penalty, **Consistent Hashing** (introduced by Karger et al. at MIT and adopted in **Amazon DynamoDB** and **Apache Cassandra**) maps both servers and data keys onto the same circular integer ring.
+
+### 3.1 Ring Topology: $\mathbb{Z}_{2^{32}}$
+
+The ring is defined as the cyclic group of unsigned 32-bit integers:
+$$\text{Ring} = [0, 2^{32} - 1]$$
+
+Where token $2^{32} - 1$ wraps around clockwise back to $0$:
+$$0 \equiv 2^{32} \pmod{2^{32}}$$
+
+1. **Server Placement:** Each server node $S_i$ is hashed onto the ring:
+   $$\text{token}(S_i) = h(S_i) \in [0, 2^{32} - 1]$$
+2. **Key Placement:** Each partition key $k$ is hashed using the identical hash function:
+   $$\text{token}(k) = h(k) \in [0, 2^{32} - 1]$$
+3. **Clockwise Routing Rule:** To find the responsible server for key $k$, we walk clockwise along the perimeter of the ring until we encounter the first server token:
+   $$\text{route}(k) = \operatorname{argmin}_{S_i} \{ \text{dist}(h(k), h(S_i)) \}$$
+
+Where the clockwise ring distance metric is defined as:
+$$\text{dist}(a, b) = (b - a) \pmod{2^{32}}$$
+
+### 3.2 The Minimal Migration Invariant
+
+What happens when a new server $S_{\text{new}}$ is added to a Consistent Hash Ring of $N$ servers?
+
+<div class="math-invariant">
+  <div class="invariant-header">The Minimal Migration Invariant</div>
+  <p>
+    When a new node $S_{\text{new}}$ with token $T_{\text{new}}$ joins the ring, it intercepts only the single arc between its counter-clockwise predecessor $T_{\text{prev}}$ and itself:
+  </p>
+  $$\text{Migrated Arc} = (T_{\text{prev}}, T_{\text{new}}]$$
+  <p>
+    Only keys whose hashes fall within $(T_{\text{prev}}, T_{\text{new}}]$ are transferred to $S_{\text{new}}$. All other $N$ arcs remain completely untouched.
+  </p>
+</div>
+
+#### Mathematical Proof of Expected Migration
+Assuming a uniform hash distribution across the $2^{32}$ circumference:
+* The new node $S_{N+1}$ divides the ring into $N + 1$ intervals.
+* By symmetry, the expected fraction of the ring captured by $S_{N+1}$ is:
+$$\mathbb{E}[\text{Migrated Keys}] = \frac{1}{N + 1} \times K = \frac{K}{N + 1}$$
+
+For $N = 10 \to 11$:
+$$\text{Expected Migration} = \frac{1}{11} \approx \mathbf{9.09\%}$$
+
+**Contrast this with Naive Modulo:**
+* Naive Modulo: **$90.91\%$** of keys migrate ($10\times$ worse!).
+* Consistent Hash Ring: **$9.09\%$** of keys migrate (the theoretical mathematical minimum).
+
+---
+
+## 4. The Visual Mental Model Blueprint
+
+The blueprint below illustrates the difference between naive modulo breakdown and the isolated arc split of consistent hashing:
+
+<HashRingMentalModelDiagram />
+
+---
+
+## 5. The Pigeonhole Principle & Virtual Nodes (Vnodes)
+
+While basic consistent hashing preserves the minimal migration invariant, it introduces a severe practical vulnerability: **traffic hotspots**.
+
+### 5.1 The Hotspot Vulnerability ($V = 1$)
+
+If we place only $N = 8$ physical servers onto the circle as single points ($V = 1$), the server tokens are distributed randomly according to a uniform Poisson point process.
+
+In continuous probability (and by the **Generalized Pigeonhole Principle** applied to random intervals):
+* The distance between adjacent tokens is an exponentially distributed random variable.
+* The ratio between the largest arc and the smallest arc is known to scale as:
+$$\frac{\text{Arc}_{\max}}{\text{Arc}_{\min}} \approx \mathcal{O}(N \ln N)$$
+
+In practice, with $N = 8$:
+* One unlucky server owns $35\text{--}45\%$ of the entire $2^{32}$ circumference.
+* Another server owns less than $3\%$.
+* The overloaded server crashes under CPU and memory starvation, while other nodes sit idle.
+
+### 5.2 The Vnode Solution: Subdividing the Pigeonholes
+
+To eliminate hotspots, systems like **Apache Cassandra** and **Amazon DynamoDB** allocate $V$ **virtual nodes (vnodes)** for each physical server (typically $V = 128$ to $256$).
+
+Instead of placing $S_i$ at a single token, we compute $V$ independent tokens:
+$$T_{i, j} = h(S_i \parallel j) \quad \text{for } j \in \{0, 1, \ldots, V - 1\}$$
+
+Where $S_i \parallel j$ denotes the physical host identifier concatenated with virtual index $j$ (e.g. `node-A#vnode#j`).
+
+Now, the ring contains $N \cdot V$ total tokens (for $8$ nodes with $V = 150$, that is $1,200$ tokens).
+
+#### The Variance Reduction Theorem
+Let $X_i$ be the total fraction of keys assigned to physical node $i$. Each physical node owns $V$ disjoint arc segments scattered uniformly around the ring.
+
+By the **Central Limit Theorem** and the **Law of Large Numbers**:
+$$\mathbb{E}[X_i] = \frac{1}{N}, \quad \operatorname{Var}(X_i) \propto \frac{1}{V}$$
+
+The **Coefficient of Variation** ($CV = \sigma / \mu$), which measures the relative imbalance across servers, scales inversely with the square root of $V$:
+$$CV = \frac{\sigma}{\mu} \approx \mathcal{O}\left(\frac{1}{\sqrt{V}}\right)$$
+
+As $V$ increases from $1$ to $150$:
+* The standard deviation of key allocation drops by **more than $3.5\times$**.
+* Every physical server receives between $11\%$ and $13.5\%$ of cluster load ($1/8 = 12.5\%$). Hotspots are mathematically eliminated!
+
+---
+
+## 6. Replica Placement & Physical Host Deduplication
+
+In distributed storage clusters, durability requires a replication factor $R > 1$ (e.g., $R = 3$ in Cassandra):
+* A key $k$ must be replicated across $R$ distinct **physical machines**.
+
+### 6.1 The Deduplication Invariant
+Because each physical host owns $V$ virtual tokens on the ring, two or three adjacent tokens on the circle may belong to the **same physical server** (e.g. `node-A#vnode#12` followed by `node-A#vnode#89`).
+
+If a naive router simply selected the next $R$ tokens on the ring, all $3$ replicas might reside on `node-A`. If `node-A` suffered a hardware failure, all copies of the data would be lost simultaneously!
+
+The routing algorithm must walk clockwise along the ring and maintain a set of selected physical hosts:
+```
+replicas = []
+token = ceiling(h(key))
+
+while len(replicas) < R:
+    server = token.physicalNode
+    if server not in replicas:
+        replicas.add(server)
+    token = token.nextClockwise()
+```
+
+---
+
+## Summary & What's Next
+
+| Mathematical Principle | Backend Architecture | Production Guarantee |
+| :--- | :--- | :--- |
+| **Bézout Coprimality ($\gcd(c_1, 2^{32}) = 1$)** | Hash mixing multipliers (Murmur3) | Preserves bijection; eliminates residue class collapse |
+| **Modular Congruence ($\mathbb{Z}_{2^{32}}$)** | Consistent Hash Ring | Unbounded integer keyspace mapped to cyclic coordinate ring |
+| **Minimal Migration Invariant** | Dynamic cluster scaling | Only $K / (N + 1)$ keys move upon node addition ($\approx 9.1\%$) |
+| **Pigeonhole Principle & Vnodes** | Virtual tokens ($V = 150$) | Shrinks load variance as $\mathcal{O}(1/\sqrt{V})$; eliminates hotspots |
+
+Ready to explore the code? Proceed directly to the **[Week 2 Lab Challenge](/week-02-challenge/)** for the complete walkthrough of the Java 21 verification suite, inductive proofs, and test execution results.
