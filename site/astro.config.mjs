@@ -74,9 +74,15 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Week 3: Graph Topologies & Cycles',
+          items: [
+            { label: 'Editorial: Wait-For Graphs & Tarjan SCC', slug: 'week-03-graph-topologies' },
+            { label: 'Lab: Deadlock Engine & Victim Selection', slug: 'week-03-challenge' },
+          ],
+        },
+        {
           label: 'Upcoming Discrete Modules',
           items: [
-            { label: 'Week 3: Graph Theory & Routing', slug: 'week-03-graph-topologies' },
             { label: 'Week 4: Relations & Task Scheduling', slug: 'week-04-posets-scheduling' },
           ],
         },
