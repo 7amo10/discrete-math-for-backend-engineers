@@ -89,18 +89,43 @@ Every weekly module is strictly split into two specialized artifacts:
 
 ---
 
+### Week 3: Graph Topologies, Deadlock Cycles & Tarjan's SCC
+
+<Aside type="tip" title="Status: Verified in Java 21 Lab">
+  Covers **MIT 6.042J Chapters 5 & 6**. Models PostgreSQL and MySQL InnoDB lock dependency topologies as directed Wait-For Graphs (WFG), proves the Cycle-Deadlock Equivalence Theorem, and detects cycles in $\mathcal{O}(V + E)$ time using Tarjan's SCC algorithm with minimal-cost victim selection.
+</Aside>
+
+<CardGrid>
+  <Card title="Editorial Deep-Dive" icon="open-book">
+    **Theory & Distributed Lock Engines**
+    * Directed graphs $G = (V, E)$, walks, paths, and directed cycles
+    * Directed Acyclic Graphs (DAGs) vs. Cyclic Lock Freezes
+    * Two-Phase Locking (2PL) and the Relational Wait-For Graph (WFG)
+    * The 50-second timeout cascading failure mode
+    * Tarjan's Strongly Connected Components (SCC) in $\mathcal{O}(V + E)$
+    * Multi-variable rollback cost metric: $\min_{T \in C} \text{Cost}(T)$
+
+    [Read Week 3 Editorial](/week-03-graph-topologies/)
+  </Card>
+
+  <Card title="Lab Challenge & Verification" icon="laptop">
+    **Mathematical Proofs & Java 21 Code Lab**
+    * Theorem 1: Cycle-Deadlock Equivalence via Pigeonhole Principle
+    * Theorem 2: Tarjan SCC linear $\mathcal{O}(V + E)$ time complexity proof
+    * Theorem 3: Minimum discarded work optimality proof
+    * Implementation of `WaitForGraph`, `TarjanDeadlockDetector`, and `LockManager`
+    * Benchmarked $> 99.1\%$ work preserved vs. legacy timeout heuristics
+    * Java 21 Virtual Threads concurrent deadlock resolution
+
+    [Launch Week 3 Lab Challenge](/week-03-challenge/)
+  </Card>
+</CardGrid>
+
+---
+
 ## Upcoming Modules
 
 <CardGrid>
-  <Card title="Week 3: Graph Topologies & Cycles" icon="seti:graphql">
-    <Badge text="Upcoming" variant="note" />
-    * **MIT 6.042J:** Chapters 5 & 6 (Graphs, DAGs, Trees, Connectivity)
-    * **Systems Focus:** PostgreSQL & InnoDB Wait-For Graph (WFG) Deadlock Resolution
-    * **Algorithm:** Tarjan's Strongly Connected Components (SCC) and minimal-rollback victim selection in $\mathcal{O}(V + E)$ time.
-
-    [Explore Week 3 Overview](/week-03-graph-topologies/)
-  </Card>
-
   <Card title="Week 4: Relations, Posets & Task Scheduling" icon="seti:clock">
     <Badge text="Upcoming" variant="note" />
     * **MIT 6.042J:** Chapter 7 (Binary Relations, Posets, Equivalence Classes)

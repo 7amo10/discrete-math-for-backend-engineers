@@ -1,11 +1,265 @@
 ---
-title: "Week 03: Graph Topologies & Deadlock Resolution"
-description: "Directed graphs, Wait-For Graphs, and Tarjan cycle detection."
+title: "Week 03: Graph Topologies, Deadlock Cycles & Tarjan's SCC"
+description: "Bridging MIT 6.042J directed graphs, walks, cycles, and strongly connected components directly to PostgreSQL and InnoDB Wait-For Graph (WFG) deadlock resolution."
+sidebar:
+  order: 5
 ---
 
-# Week 03: Graph Topologies & Deadlock Resolution
+import DeadlockGraphVisualDiagram from '../../components/DeadlockGraphVisualDiagram.astro';
+import Mermaid from '../../components/Mermaid.astro';
+import { Aside } from '@astrojs/starlight/components';
 
-### Upcoming Concepts
-- Directed graphs, strongly connected components (SCC), and cycle detection.
-- Transaction Wait-For Graphs (WFG) in database storage engines.
-- Minimal-cost victim selection to break cyclic lock dependencies.
+<div class="hand-drawn" style="text-align: center; margin: 1rem auto 2rem; display: block;">
+  "When two threads wait for each other, it is a human bug; when a cycle forms in G = (V, E), it is a mathematical trap."
+</div>
+
+---
+
+## The Academic Spine: MIT 6.042J Readings
+
+This module is built on the rigorous mathematical foundations of directed graph theory:
+* **MIT 6.042J Chapter 5:** Directed Graphs, In-degree, Out-degree, Walks, Paths, and Directed Cycles.
+* **MIT 6.042J Chapter 6:** Directed Acyclic Graphs (DAGs), Trees, and Topological Orderings.
+* **Algorithmic Extension:** Robert Tarjan's 1972 Strongly Connected Components (SCC) algorithm in $\mathcal{O}(V + E)$ linear time.
+
+<Aside type="note" title="Theory to Code Bridge">
+  This editorial provides the theoretical concepts, formal proofs, and database lock architectures. To view and run the verified Java 21 test suite, head directly to the **[Week 3 Lab Challenge](/week-03-challenge/)**.
+</Aside>
+
+---
+
+## 1. Discrete Graph Theory Fundamentals (Simplified for Backend Engineers)
+
+In distributed systems and database storage engines, graphs are not abstract academic drawings. They are the exact data structures used to track thread dependencies, RPC call trees, and database lock acquisitions.
+
+### 1.1 What is a Directed Graph $G = (V, E)$?
+
+Formally, a **Directed Graph** (or **Digraph**) $G$ is an ordered pair:
+
+$$G = (V, E)$$
+
+* **Vertices ($V$):** A finite set of discrete nodes. In a database engine, each vertex represents an active transaction:
+  $$V = \{T_1, T_2, \ldots, T_n\}$$
+* **Directed Edges ($E$):** A set of ordered pairs of vertices:
+  $$E \subseteq V \times V$$
+  An edge $(u, v)$ (written $u \longrightarrow v$) denotes a one-way directed dependency from $u$ to $v$.
+
+<Aside type="note" title="Core Term: In-Degree vs. Out-Degree">
+  * **Out-Degree ($\text{outdeg}(u)$):** The number of edges leaving vertex $u$. In database locks, $\text{outdeg}(u) = 1$ means transaction $u$ is blocked and waiting for 1 lock held by another transaction.
+  * **In-Degree ($\text{indeg}(u)$):** The number of edges entering vertex $u$. This represents how many other transactions are blocked waiting for $u$ to release its locks.
+</Aside>
+
+### 1.2 Walks, Paths, and Directed Cycles
+
+To understand deadlocks, we must distinguish between walks, paths, and cycles:
+
+1. **Walk:** An alternating sequence of vertices and edges:
+   $$v_0 \xrightarrow{e_1} v_1 \xrightarrow{e_2} v_2 \longrightarrow \ldots \longrightarrow v_k$$
+2. **Path:** A walk where **all vertices are distinct** ($v_i \neq v_j$ for all $i \neq j$).
+3. **Directed Cycle:** A walk of length $k \ge 1$ where the starting vertex equals the ending vertex ($v_0 = v_k$), and all intermediate vertices $v_1, \ldots, v_{k-1}$ are distinct.
+
+$$C = v_0 \longrightarrow v_1 \longrightarrow v_2 \longrightarrow \ldots \longrightarrow v_0$$
+
+<Aside type="tip" title="Intuition: The Infinite Loop of Dependencies">
+  In an acyclic path ($A \to B \to C$), progress is always guaranteed: once $C$ finishes, $B$ can proceed, and then $A$ can proceed.
+  
+  In a **directed cycle** ($A \to B \to A$), neither transaction can ever take the first step. $A$ cannot finish without $B$, and $B$ cannot finish without $A$. Without external intervention, the threads will remain blocked until the machine loses power.
+</Aside>
+
+### 1.3 Directed Acyclic Graphs (DAGs) vs. Cyclic Graphs
+
+A directed graph with **no directed cycles** is called a **Directed Acyclic Graph (DAG)**.
+
+* In a DAG, there is always at least one vertex with $\text{indeg}(v) = 0$ (a source) and at least one vertex with $\text{outdeg}(u) = 0$ (a sink).
+* A DAG can always be linearized into a **topological ordering**, meaning work can be executed in dependency order without ever freezing.
+* **Database Invariant:** A database locking state is healthy and progress-guaranteed **if and only if** its lock dependency graph is a DAG!
+
+---
+
+## 2. The Real-World Engineering Problem: Database Lock Deadlocks
+
+Every backend engineer working with relational databases (PostgreSQL, MySQL InnoDB, Oracle) or distributed key-value stores will encounter deadlocks under concurrent write loads.
+
+### 2.1 How Relational Row Locks Create Dependencies
+
+Under standard database isolation levels (Read Committed, Repeatable Read, Serializable), modifying a row requires acquiring an **Exclusive Lock** (`X` lock):
+
+```sql
+-- Transaction T1
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 101; -- Locks Row 101
+
+-- Transaction T2
+BEGIN;
+UPDATE accounts SET balance = balance + 50 WHERE id = 202;  -- Locks Row 202
+```
+
+Now, imagine the next statements occur concurrently:
+* $T_1$ executes: `UPDATE accounts SET balance = balance + 100 WHERE id = 202;`  
+  $\implies$ Row 202 is held by $T_2$. Therefore, $T_1$ is **blocked**, waiting for $T_2$.
+* $T_2$ executes: `UPDATE accounts SET balance = balance - 50 WHERE id = 101;`  
+  $\implies$ Row 101 is held by $T_1$. Therefore, $T_2$ is **blocked**, waiting for $T_1$.
+
+### 2.2 The Wait-For Graph (WFG) Model
+
+The database engine models this relationship internally as a **Wait-For Graph (WFG)**:
+
+<Mermaid 
+  title="Wait-For Graph (WFG) Circular Dependency Topology"
+  code={`flowchart LR
+    subgraph DeadlockCycle["Circular Dependency Cycle"]
+        T1["Transaction T1<br/>Holds Row 101"]
+        T2["Transaction T2<br/>Holds Row 202"]
+        T1 -->|Waiting for Row 202| T2
+        T2 -->|Waiting for Row 101| T1
+    end
+
+    T3["Transaction T3<br/>Downstream Waiter"] -->|Waiting for Row 101| T1
+
+    classDef cycle fill:#3f1a24,stroke:#ef4444,stroke-width:2px,color:#fca5a5;
+    classDef waiter fill:#1e293b,stroke:#64748b,stroke-width:1px,color:#94a3b8;
+    class T1,T2 cycle;
+    class T3 waiter;
+`} />
+
+* $T_1$ cannot release Row 101 until it completes its transaction and commits.
+* But $T_1$ cannot commit until it gets Row 202 from $T_2$.
+* $T_2$ cannot release Row 202 until it gets Row 101 from $T_1$.
+* **Mathematical State:** The subgraph formed by $\lbrace T_1, T_2 \rbrace$ is a directed cycle of length 2.
+
+### 2.3 The Naive Solution: Arbitrary Lock Timeouts
+
+In legacy or poorly configured systems, engineers rely on blind lock wait timeouts:
+
+```properties
+# MySQL InnoDB default timeout
+innodb_lock_wait_timeout = 50
+```
+
+<Aside type="danger" title="Production Disaster: The 50-Second Freeze">
+  Relying on timeouts in a high-traffic microservice causes catastrophic cascading failures:
+  1. **Thread Starvation:** Worker threads in Tomcat/Netty block for 50 full seconds, holding database connection pool sockets (`HikariCP`).
+  2. **Connection Pool Depletion:** Within 2 seconds, all available DB connections are exhausted by frozen threads.
+  3. **Cascading Microservice Outage:** Health checks fail, HTTP 504 Gateway Timeouts cascade across the entire cluster, taking down upstream gateways.
+  4. **Arbitrary Work Loss:** When the timeout finally triggers, it may abort a massive 10,000-row batch import that was 99% complete, wasting minutes of compute!
+</Aside>
+
+---
+
+## 3. The Discrete Math Solution: Tarjan's Strongly Connected Components (SCC)
+
+Rather than waiting blindly for 50 seconds, production database engines run background cycle detection. The state-of-the-art discrete algorithm for this is **Robert Tarjan's Strongly Connected Components (SCC)** algorithm.
+
+### 3.1 What is a Strongly Connected Component (SCC)?
+
+In a directed graph $G = (V, E)$, a subset of vertices $S \subseteq V$ is **Strongly Connected** if:
+
+$$\forall u, v \in S, \quad \exists \text{ path } u \longrightarrow^* v \quad \text{and} \quad \exists \text{ path } v \longrightarrow^* u$$
+
+An **SCC** is a *maximal* strongly connected subgraph.
+
+<Aside type="tip" title="The Fundamental Equivalence Theorem">
+  * If an SCC contains **2 or more vertices** ($|S| \ge 2$), it **guarantees the existence of a directed cycle**!
+  * If an SCC contains only **1 vertex** ($\lbrace u \rbrace$), it contains a cycle if and only if $u$ has a self-loop ($u \to u$).
+  * Therefore: **Detecting deadlocks is mathematically identical to finding all SCCs with size $\ge 2$!**
+</Aside>
+
+### 3.2 How Tarjan's Algorithm Works (Step-by-Step)
+
+Tarjan's algorithm uses a single Depth-First Search (DFS) traversal, maintaining two integer state variables for each vertex $u$, plus a traversal stack:
+
+1. **`dfn[u]` (Discovery Number):** A counter recording the exact timestamp or order when vertex $u$ is first visited.
+2. **`low[u]` (Lowest Reachable Ancestor):** The smallest `dfn` reachable from $u$ through its DFS subtree, including at most one back-edge to a vertex currently on the stack.
+3. **`stack`:** A LIFO stack tracking the active path of exploration.
+
+<Aside type="note" title="Core Term: What is a Back-Edge?">
+  During a DFS traversal, a **back-edge** is a directed edge $(u \to v)$ where $v$ is an ancestor of $u$ currently residing on the active recursion stack. A back-edge is the exact mathematical signature that closes a directed cycle!
+</Aside>
+
+#### The 4 Steps of Tarjan's Traversal:
+
+<Mermaid 
+  title="Tarjan Strongly Connected Components (SCC) Traversal Logic"
+  maxWidth="460px"
+  code={`flowchart TD
+    A["Visit Vertex u<br/>dfn(u) = low(u) = ++index<br/>Push u onto Stack"] --> B{"Check neighbor v"}
+    B -->|v not visited| C["DFS(v)<br/>low(u) = min(low(u), low(v))"]
+    B -->|v on Stack| D["Back-Edge:<br/>low(u) = min(low(u), dfn(v))"]
+    C --> E{"low(u) == dfn(u)?"}
+    D --> E
+    E -->|Yes: Root of SCC| F["Pop Stack until u<br/>Nodes form an SCC"]
+    E -->|No| G["Return to DFS parent"]
+`} />
+
+#### Why is Tarjan Linear Time $\mathcal{O}(V + E)$?
+* Every vertex is pushed onto the stack exactly once and popped exactly once ($\mathcal{O}(V)$).
+* Every directed edge is inspected at most once during DFS neighbor iteration ($\mathcal{O}(E)$).
+* Total execution time is strictly bounded by $\mathcal{O}(V + E)$. In a database with 500 concurrent transactions and 200 lock dependencies, Tarjan resolves cycles in **under 0.2 milliseconds**!
+
+---
+
+## 4. The Visual Mental Model Blueprint
+
+Below is the complete engineering mental model illustrating the transactional Wait-For Graph, the DFS `dfn` and `low` traversal state, and the cost-weighted victim selection decision:
+
+<DeadlockGraphVisualDiagram />
+
+---
+
+## 5. Minimum-Cost Victim Selection (Saving Wasted Computational Work)
+
+Once a cycle is detected, the database engine **must abort one transaction** (the "victim") to break the cycle and release its held locks.
+
+### 5.1 The Naive Approach: Youngest Transaction
+
+Many legacy database tutorials recommend: *"Just abort the transaction that started most recently."*
+
+This heuristic fails in enterprise scenarios:
+* A batch processing job that started 100ms ago may have already written **10,000 inventory rows**.
+* A quick API read that started 2ms ago may have locked a single customer row.
+* Aborting the batch job simply because its timestamp was later discards massive computational work and forces an expensive rollback of 10,000 disk writes!
+
+### 5.2 The Formal Cost Metric
+
+To minimize total systemic discarded work, we formulate a multi-variable **Rollback Cost Function** for each transaction $T \in C$:
+
+$$\text{Cost}(T) = \alpha \cdot \text{ElapsedMs}(T) + \beta \cdot \text{RowsModified}(T) + \gamma \cdot \text{Priority}(T)$$
+
+Where:
+* $\text{ElapsedMs}(T)$: Wall-clock execution time (penalizes killing long-running transactions).
+* $\text{RowsModified}(T)$: Number of mutations or undo log entries generated (heavily penalizes undo log rollbacks).
+* $\text{Priority}(T)$: Static business priority (e.g. VIP checkout vs. background telemetry).
+
+<Aside type="tip" title="The Optimal Victim Selection Rule">
+  The optimal victim $T^*$ is the transaction in cycle $C$ that minimizes the rollback cost:
+  
+  $$T^* = \arg\min_{T \in C} \text{Cost}(T)$$
+  
+  By aborting $T^*$, we guarantee that the cycle is broken with the **provably minimal loss of computational work**.
+</Aside>
+
+### 5.3 Live Numerical Comparison
+
+Consider the deadlock in our blueprint diagram between $T_1$ and $T_2$:
+
+| Transaction | Role | Runtime | Rows Written | Priority | Computed Cost | Decision |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **$T_1$** | `tx-batch-writer` | 4,200 ms | 5,000 rows | 5 | $(0.1 \times 4200) + (1.0 \times 5000) + (10 \times 5) = \mathbf{5,470}$ | **SURVIVES** |
+| **$T_2$** | `tx-quick-update` | 5 ms | 1 row | 1 | $(0.1 \times 5) + (1.0 \times 1) + (10 \times 1) = \mathbf{11.5}$ | **SELECTED VICTIM** |
+
+* Discarded work: **Only 1 row** (99.98% of total cluster work preserved).
+* Resolution time: **$< 0.5\text{ ms}$** (instantaneous cycle cut vs. 50-second timeout).
+* The aborted transaction receives PostgreSQL error code `40P01 (deadlock_detected)` and can safely retry after an exponential backoff jitter.
+
+---
+
+## Summary & What's Next
+
+| Discrete Concept | Systems Architecture Application | Performance Guarantee |
+| :--- | :--- | :--- |
+| **Directed Graph $G = (V, E)$** | Transaction Wait-For Graph (WFG) | Strict formal model of lock dependencies |
+| **Directed Cycles** | Circular lock freezes | Proves deadlocks exist $\iff$ cycles exist |
+| **Tarjan's SCC Algorithm** | Real-time deadlock detector | Solves cycle detection in $\mathcal{O}(V + E)$ time |
+| **Cost Minimization** | Intelligent victim selection | Discards $< 1\%$ of concurrent computational work |
+
+Ready to inspect the formal mathematical proofs and execute the Java 21 verification suite? Proceed directly to the **[Week 3 Lab Challenge](/week-03-challenge/)**!

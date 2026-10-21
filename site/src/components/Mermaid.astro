@@ -4,13 +4,14 @@ interface Props {
   chart?: string;
   title?: string;
   class?: string;
+  maxWidth?: string;
 }
 
-const { code, chart, title = "", class: className = "" } = Astro.props;
+const { code, chart, title = "", class: className = "", maxWidth = "100%" } = Astro.props;
 const diagramCode = (code ?? chart ?? "").trim();
 ---
 
-<div class={`mermaid-card ${className}`}>
+<div class={`mermaid-card ${className}`} style={`--mermaid-max-width: ${maxWidth};`}>
   {title && (
     <div class="mermaid-card-header">
       <div class="mermaid-dots">
@@ -102,7 +103,7 @@ const diagramCode = (code ?? chart ?? "").trim();
 
   /* Make rendered SVG fill nicely */
   .mermaid :global(svg) {
-    max-width: 100% !important;
+    max-width: var(--mermaid-max-width, 100%) !important;
     height: auto !important;
   }
 </style>
