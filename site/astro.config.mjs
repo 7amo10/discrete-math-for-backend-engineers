@@ -81,9 +81,10 @@ export default defineConfig({
           ],
         },
         {
-          label: 'Upcoming Discrete Modules',
+          label: 'Week 4: Relations & Task Scheduling',
           items: [
-            { label: 'Week 4: Relations & Task Scheduling', slug: 'week-04-posets-scheduling' },
+            { label: 'Editorial: Posets & Dilworth Scheduling', slug: 'week-04-posets-scheduling' },
+            { label: 'Lab: Task DAG & Antichain Challenge', slug: 'week-04-challenge' },
           ],
         },
       ],
