@@ -1,0 +1,422 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class={`excalidraw-container ${className}`}>
+  <div class="diagram-toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-icon">✎</span>
+      <span class="toolbar-title">POSET TASK SCHEDULER &amp; DILWORTH ANTICHAIN BLUEPRINT</span>
+    </div>
+    <div class="toolbar-tags">
+      <span class="tool-tag tag-cyan">Hasse Reduction</span>
+      <span class="tool-tag tag-gold">Critical Path T_min</span>
+      <span class="tool-tag tag-purple">Dilworth Width = 3</span>
+    </div>
+  </div>
+
+  <div class="diagram-canvas-wrap">
+    <svg 
+      viewBox="0 0 960 560" 
+      class="excalidraw-svg" 
+      xmlns="http://www.w3.org/2000/svg"
+      role="img"
+      aria-label="Poset task scheduler and Dilworth antichain mental model blueprint"
+    >
+      <defs>
+        <!-- Gradients -->
+        <linearGradient id="cardDarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0f172a" stop-opacity="0.95" />
+          <stop offset="100%" stop-color="#090d16" stop-opacity="0.95" />
+        </linearGradient>
+        <radialGradient id="criticalGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.22" />
+          <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+        </radialGradient>
+        <radialGradient id="waveGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.15" />
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+        </radialGradient>
+
+        <!-- Arrow Markers -->
+        <marker id="arrowBluePoset" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#3b82f6" />
+        </marker>
+        <marker id="arrowOrangePoset" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b" />
+        </marker>
+        <marker id="arrowMutedPoset" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+        </marker>
+      </defs>
+
+      <!-- Background Grid -->
+      <rect width="960" height="560" fill="#070b14" rx="14" />
+      <g stroke="#3b82f6" stroke-width="0.5" stroke-opacity="0.08">
+        <line x1="60" y1="0" x2="60" y2="560" />
+        <line x1="180" y1="0" x2="180" y2="560" />
+        <line x1="300" y1="0" x2="300" y2="560" />
+        <line x1="420" y1="0" x2="420" y2="560" />
+        <line x1="540" y1="0" x2="540" y2="560" />
+        <line x1="660" y1="0" x2="660" y2="560" />
+        <line x1="780" y1="0" x2="780" y2="560" />
+        <line x1="900" y1="0" x2="900" y2="560" />
+        <line x1="0" y1="70" x2="960" y2="70" />
+        <line x1="0" y1="170" x2="960" y2="170" />
+        <line x1="0" y1="270" x2="960" y2="270" />
+        <line x1="0" y1="370" x2="960" y2="370" />
+        <line x1="0" y1="470" x2="960" y2="470" />
+      </g>
+
+      <!-- SECTION 1: ANTICHAIN WAVE COLUMNS (THE WAVE BARRIERS) -->
+      <!-- Wave 1 Background -->
+      <rect x="25" y="45" width="165" height="480" rx="10" fill="#0c1322" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.5" />
+      <text x="107" y="70" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700" letter-spacing="1">WAVE 1 (ANTICHAIN)</text>
+      <text x="107" y="86" text-anchor="middle" fill="#94a3b8" font-size="10">in-degree = 0 | 3 Workers</text>
+
+      <!-- Wave 2 Background -->
+      <rect x="210" y="45" width="160" height="480" rx="10" fill="#0c1322" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.5" />
+      <text x="290" y="70" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700" letter-spacing="1">WAVE 2 (ANTICHAIN)</text>
+      <text x="290" y="86" text-anchor="middle" fill="#94a3b8" font-size="10">Wait for Wave 1 | 2 Workers</text>
+
+      <!-- Wave 3 Background -->
+      <rect x="390" y="45" width="150" height="480" rx="10" fill="#1e1814" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.6" />
+      <text x="465" y="70" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="700" letter-spacing="1">WAVE 3 (BOTTLENECK)</text>
+      <text x="465" y="86" text-anchor="middle" fill="#d97706" font-size="10">Total Synchronization | 1 Task</text>
+
+      <!-- Wave 4 Background -->
+      <rect x="560" y="45" width="160" height="480" rx="10" fill="#0c1322" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.5" />
+      <text x="640" y="70" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700" letter-spacing="1">WAVE 4 (ANTICHAIN)</text>
+      <text x="640" y="86" text-anchor="middle" fill="#94a3b8" font-size="10">Fork to 2 Workers</text>
+
+      <!-- Wave 5 Background -->
+      <rect x="740" y="45" width="195" height="180" rx="10" fill="#0c1322" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 4" stroke-opacity="0.5" />
+      <text x="837" y="70" text-anchor="middle" fill="#60a5fa" font-size="12" font-weight="700" letter-spacing="1">WAVE 5 (FINAL SINK)</text>
+      <text x="837" y="86" text-anchor="middle" fill="#94a3b8" font-size="10">Join &amp; Notify</text>
+
+      <!-- EDGES / DEPENDENCIES -->
+      <!-- Critical Path Edges (Gold, thick, glowing) -->
+      <!-- Extract Cust (40, 110) -> Transform Sales (225, 175) -->
+      <path d="M 175 140 L 225 195" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrowOrangePoset)" />
+      <!-- Transform Sales (225, 175) -> Aggregate Analytics (405, 260) -->
+      <path d="M 355 210 L 405 285" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrowOrangePoset)" />
+      <!-- Aggregate Analytics (405, 260) -> Gen Invoices (575, 175) -->
+      <path d="M 525 285 L 575 210" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrowOrangePoset)" />
+      <!-- Gen Invoices (575, 175) -> Dispatch Notif (755, 110) -->
+      <path d="M 705 195 L 755 140" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrowOrangePoset)" />
+
+      <!-- Non-critical Parallel Edges (Blue / Muted) -->
+      <!-- Extract Orders -> Transform Sales -->
+      <path d="M 175 260 L 225 220" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowBluePoset)" />
+      <!-- Extract Inv -> Transform Stock -->
+      <path d="M 175 400 L 225 385" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrowBluePoset)" />
+      <!-- Transform Stock -> Aggregate Analytics -->
+      <path d="M 355 385 L 405 315" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowBluePoset)" />
+      <!-- Aggregate Analytics -> Update Search Index -->
+      <path d="M 525 315 L 575 385" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrowBluePoset)" />
+      <!-- Update Search Index -> Dispatch Notif -->
+      <path d="M 705 385 L 770 185" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#arrowBluePoset)" />
+
+      <!-- TASK NODES -->
+      <!-- WAVE 1 TASKS -->
+      <!-- T1: Extract Customer (Critical Path Node) -->
+      <g transform="translate(40, 105)">
+        <rect width="135" height="70" rx="8" fill="#1e2230" stroke="#f59e0b" stroke-width="2" />
+        <circle cx="15" cy="18" r="4" fill="#f59e0b" />
+        <text x="25" y="22" fill="#fbbf24" font-size="11" font-weight="700">ExtractCust</text>
+        <text x="12" y="42" fill="#cbd5e1" font-size="10">Customer CRM data</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#292524" />
+        <text x="18" y="60" fill="#f59e0b" font-size="9" font-weight="700">40 ms</text>
+        <text x="68" y="60" fill="#94a3b8" font-size="9">Chain Start</text>
+      </g>
+
+      <!-- T2: Extract Orders -->
+      <g transform="translate(40, 225)">
+        <rect width="135" height="70" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />
+        <circle cx="15" cy="18" r="4" fill="#3b82f6" />
+        <text x="25" y="22" fill="#93c5fd" font-size="11" font-weight="700">ExtractOrders</text>
+        <text x="12" y="42" fill="#94a3b8" font-size="10">Daily order entries</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#1e293b" />
+        <text x="18" y="60" fill="#60a5fa" font-size="9" font-weight="700">40 ms</text>
+        <text x="68" y="60" fill="#64748b" font-size="9">Incomparable</text>
+      </g>
+
+      <!-- T3: Extract Inventory -->
+      <g transform="translate(40, 365)">
+        <rect width="135" height="70" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />
+        <circle cx="15" cy="18" r="4" fill="#3b82f6" />
+        <text x="25" y="22" fill="#93c5fd" font-size="11" font-weight="700">ExtractInv</text>
+        <text x="12" y="42" fill="#94a3b8" font-size="10">Warehouse stock</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#1e293b" />
+        <text x="18" y="60" fill="#60a5fa" font-size="9" font-weight="700">40 ms</text>
+        <text x="68" y="60" fill="#64748b" font-size="9">Incomparable</text>
+      </g>
+
+      <!-- WAVE 2 TASKS -->
+      <!-- T4: Transform Sales (Critical Path Node) -->
+      <g transform="translate(225, 165)">
+        <rect width="130" height="70" rx="8" fill="#1e2230" stroke="#f59e0b" stroke-width="2" />
+        <circle cx="15" cy="18" r="4" fill="#f59e0b" />
+        <text x="25" y="22" fill="#fbbf24" font-size="11" font-weight="700">TransformSales</text>
+        <text x="12" y="42" fill="#cbd5e1" font-size="10">Clean &amp; join sales</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#292524" />
+        <text x="18" y="60" fill="#f59e0b" font-size="9" font-weight="700">30 ms</text>
+        <text x="68" y="60" fill="#f59e0b" font-size="9">Critical</text>
+      </g>
+
+      <!-- T5: Transform Stock -->
+      <g transform="translate(225, 345)">
+        <rect width="130" height="70" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />
+        <circle cx="15" cy="18" r="4" fill="#3b82f6" />
+        <text x="25" y="22" fill="#93c5fd" font-size="11" font-weight="700">TransformStock</text>
+        <text x="12" y="42" fill="#94a3b8" font-size="10">Validate inventory</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#1e293b" />
+        <text x="18" y="60" fill="#60a5fa" font-size="9" font-weight="700">30 ms</text>
+        <text x="68" y="60" fill="#64748b" font-size="9">Incomparable</text>
+      </g>
+
+      <!-- WAVE 3 TASK: Aggregate Analytics (Bottleneck / Longest Chain Intersection) -->
+      <g transform="translate(405, 260)">
+        <rect width="120" height="80" rx="8" fill="#261a12" stroke="#f59e0b" stroke-width="2.5" />
+        <circle cx="15" cy="20" r="4" fill="#f59e0b" />
+        <text x="25" y="24" fill="#fbbf24" font-size="11" font-weight="700">AggAnalytics</text>
+        <text x="12" y="44" fill="#cbd5e1" font-size="10">Consolidate metric</text>
+        <rect x="12" y="55" width="48" height="15" rx="3" fill="#451a03" />
+        <text x="18" y="66" fill="#f59e0b" font-size="9" font-weight="700">20 ms</text>
+        <text x="65" y="66" fill="#fbbf24" font-size="9" font-weight="700">Barrier Node</text>
+      </g>
+
+      <!-- WAVE 4 TASKS -->
+      <!-- T7: Gen Invoices (Critical Path Node) -->
+      <g transform="translate(575, 165)">
+        <rect width="130" height="70" rx="8" fill="#1e2230" stroke="#f59e0b" stroke-width="2" />
+        <circle cx="15" cy="18" r="4" fill="#f59e0b" />
+        <text x="25" y="22" fill="#fbbf24" font-size="11" font-weight="700">GenInvoices</text>
+        <text x="12" y="42" fill="#cbd5e1" font-size="10">PDF &amp; ledger write</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#292524" />
+        <text x="18" y="60" fill="#f59e0b" font-size="9" font-weight="700">25 ms</text>
+        <text x="68" y="60" fill="#f59e0b" font-size="9">Critical</text>
+      </g>
+
+      <!-- T8: Index Search -->
+      <g transform="translate(575, 345)">
+        <rect width="130" height="70" rx="8" fill="#111827" stroke="#3b82f6" stroke-width="1.5" />
+        <circle cx="15" cy="18" r="4" fill="#3b82f6" />
+        <text x="25" y="22" fill="#93c5fd" font-size="11" font-weight="700">IndexSearch</text>
+        <text x="12" y="42" fill="#94a3b8" font-size="10">Push to Elastic/ES</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#1e293b" />
+        <text x="18" y="60" fill="#60a5fa" font-size="9" font-weight="700">25 ms</text>
+        <text x="68" y="60" fill="#64748b" font-size="9">Incomparable</text>
+      </g>
+
+      <!-- WAVE 5 TASK: Dispatch Notifications -->
+      <g transform="translate(755, 105)">
+        <rect width="165" height="70" rx="8" fill="#1e2230" stroke="#f59e0b" stroke-width="2" />
+        <circle cx="15" cy="18" r="4" fill="#f59e0b" />
+        <text x="25" y="22" fill="#fbbf24" font-size="11" font-weight="700">DispatchNotif</text>
+        <text x="12" y="42" fill="#cbd5e1" font-size="10">Email, Webhook, SMS</text>
+        <rect x="12" y="49" width="48" height="15" rx="3" fill="#292524" />
+        <text x="18" y="60" fill="#f59e0b" font-size="9" font-weight="700">15 ms</text>
+        <text x="68" y="60" fill="#f59e0b" font-size="9">Chain End</text>
+      </g>
+
+      <!-- SECTION 2: DILWORTH & CRITICAL PATH DECISION CARDS (BOTTOM RIGHT) -->
+      <!-- Card: Critical Path Analysis -->
+      <g transform="translate(740, 240)">
+        <rect width="195" height="135" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+        <text x="12" y="22" fill="#fbbf24" font-size="11" font-weight="700">CRITICAL PATH BOUND</text>
+        <text x="12" y="40" fill="#94a3b8" font-size="9">Longest Chain (5 Hops):</text>
+        <text x="12" y="55" fill="#fef08a" font-size="9" font-family="monospace">40 + 30 + 20 + 25 + 15</text>
+        <text x="12" y="75" fill="#cbd5e1" font-size="10">Theoretical Lower Bound:</text>
+        <text x="12" y="94" fill="#fbbf24" font-size="14" font-weight="700">T_min = 130 ms</text>
+        <text x="12" y="112" fill="#94a3b8" font-size="9">Sequential Sum: 265 ms</text>
+        <text x="12" y="125" fill="#34d399" font-size="9" font-weight="700">Max Theoretical Speedup: 2.04x</text>
+      </g>
+
+      <!-- Card: Dilworth Sizing Rule -->
+      <g transform="translate(740, 390)">
+        <rect width="195" height="135" rx="8" fill="#0f172a" stroke="#8b5cf6" stroke-width="1.5" />
+        <text x="12" y="22" fill="#c084fc" font-size="11" font-weight="700">DILWORTH WORKER SIZING</text>
+        <text x="12" y="40" fill="#94a3b8" font-size="9">Max Antichain Width:</text>
+        <text x="12" y="58" fill="#e9d5ff" font-size="13" font-weight="700">W_max = 3 (Wave 1)</text>
+        <text x="12" y="76" fill="#cbd5e1" font-size="9">&bull; Min chains needed = 3</text>
+        <text x="12" y="90" fill="#cbd5e1" font-size="9">&bull; Optimal Worker Pool = 3</text>
+        <text x="12" y="106" fill="#a78bfa" font-size="9">Allocating &gt; 3 threads wastes</text>
+        <text x="12" y="120" fill="#a78bfa" font-size="9">cloud CPU with 0 extra speedup</text>
+      </g>
+    </svg>
+  </div>
+
+</div>
+
+<style>
+  .excalidraw-container {
+    position: relative;
+    margin: 2.5rem 0;
+    border-radius: 1rem;
+    background: rgba(13, 19, 33, 0.75);
+    border: 1.5px solid rgba(59, 130, 246, 0.25);
+    overflow: hidden;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  :root[data-theme='light'] .excalidraw-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .diagram-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.4rem;
+    background: rgba(15, 23, 42, 0.75);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  :root[data-theme='light'] .diagram-toolbar {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .toolbar-icon {
+    font-size: 1rem;
+    color: #60a5fa;
+  }
+
+  .toolbar-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #93c5fd;
+  }
+
+  :root[data-theme='light'] .toolbar-title {
+    color: #1e3a8a;
+  }
+
+  .toolbar-tags {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .tool-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-cyan {
+    background: rgba(6, 182, 212, 0.15);
+    color: #22d3ee;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+  }
+
+  .tag-gold {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .tag-purple {
+    background: rgba(139, 92, 246, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  .diagram-canvas-wrap {
+    padding: 1.5rem;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+    background: #070b14;
+  }
+
+  :root[data-theme='light'] .diagram-canvas-wrap {
+    background: #f1f5f9;
+  }
+
+  .excalidraw-svg {
+    width: 100%;
+    max-width: 960px;
+    height: auto;
+    display: block;
+    border-radius: 0.6rem;
+  }
+
+  .diagram-footer {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(15, 23, 42, 0.65);
+    border-top: 1px solid rgba(59, 130, 246, 0.15);
+  }
+
+  :root[data-theme='light'] .diagram-footer {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .footer-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+  }
+
+  .stat-val {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f8fafc;
+    font-family: monospace;
+  }
+
+  :root[data-theme='light'] .stat-val {
+    color: #0f172a;
+  }
+
+  .stat-gold {
+    color: #fbbf24 !important;
+  }
+
+  .stat-green {
+    color: #34d399 !important;
+  }
+
+  .stat-purple {
+    color: #c084fc !important;
+  }
+
+  @media (max-width: 768px) {
+    .diagram-footer {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .toolbar-tags {
+      display: none;
+    }
+  }
+</style>

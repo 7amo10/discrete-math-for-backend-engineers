@@ -123,15 +123,35 @@ Every weekly module is strictly split into two specialized artifacts:
 
 ---
 
-## Upcoming Modules
+### Week 4: Relations, Partial Orders & Task Scheduling
+
+<Aside type="tip" title="Status: Verified in Java 21 Lab">
+  Covers **MIT 6.042J Chapter 7**. Models Apache Airflow and Spring IoC task dependencies as finite strict partially ordered sets $P = (X, \prec)$, proves the Poset-DAG Duality Theorem, computes minimal Hasse diagrams (transitive reduction), and schedules concurrent antichains on Java 21 Virtual Threads sized with Dilworth's Theorem.
+</Aside>
 
 <CardGrid>
-  <Card title="Week 4: Relations, Posets & Task Scheduling" icon="seti:clock">
-    <Badge text="Upcoming" variant="note" />
-    * **MIT 6.042J:** Chapter 7 (Binary Relations, Posets, Equivalence Classes)
-    * **Systems Focus:** Spring IoC Dependency Injection & Airflow Workflow DAGs
-    * **Algorithm:** Topological sorting, Hasse diagrams, Dilworth's Theorem, and parallel antichain scheduling across worker threads.
+  <Card title="Editorial Deep-Dive" icon="open-book">
+    **Theory & Workflow Schedulers**
+    * Binary relations: Reflexive, Symmetric, Antisymmetric, Transitive
+    * Total orders vs. Strict Partial Orders ($P = (X, \prec)$)
+    * Why incomparability ($u \parallel v$) is the physical basis of concurrency
+    * Hasse diagrams & Transitive Reductions (pruning redundant edges)
+    * Chains (Critical Path latency bottlenecks) vs. Antichains (Parallel Waves)
+    * Dilworth's Theorem & sizing worker thread pools with 0% idle waste
+    * Real-world systems: Spring Boot IoC startup, Airflow DAGs, Gradle builds
 
-    [Explore Week 4 Overview](/week-04-posets-scheduling/)
+    [Read Week 4 Editorial](/week-04-posets-scheduling/)
+  </Card>
+
+  <Card title="Lab Challenge & Verification" icon="laptop">
+    **Mathematical Proofs & Java 21 Code Lab**
+    * Theorem 1: Poset-DAG Duality Theorem (Irreflexivity & Asymmetry)
+    * Theorem 2: Correctness and linear $\mathcal{O}(V + E)$ Kahn topological sort
+    * Theorem 3: Critical Path Lower Bound & Dilworth Antichain Concurrency
+    * Implementation of `PosetGraph`, `TopologicalLinearizer`, `AntichainWaveScheduler`
+    * Verified on Java 21 Virtual Threads with enterprise ETL pipeline benchmark
+    * Benchmarked $1.96\times$ parallel speedup ($96.3\%$ of theoretical maximum)
+
+    [Launch Week 4 Lab Challenge](/week-04-challenge/)
   </Card>
 </CardGrid>
